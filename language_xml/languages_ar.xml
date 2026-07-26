@@ -1,0 +1,200 @@
+<widgetInfo>
+ <label id="lblAboutLogo"></label>
+ <label id="lblDevCredit">تطوير وبرمجة: علي السكاف (AliSakkaf)</label>
+ <label id="lblTechDescription">أداة خفيفة وعالية الأداء لتنظيف وتفريغ ذاكرة ويندوز باستخدام أوامر Win32 Kernel المباشرة دون أي استهلاك إضافي للموارد أو بطء في النظام.</label>
+ <label id="lblCopyright">مرخص تحت رخصة MIT. جميع الحقوق محفوظة © 2026 علي السكاف.</label>
+ <label id="lblThreshText">بدء التنظيف التلقائي عند تجاوز استهلاك الذاكرة:</label>
+ <label id="lblIntervalText">تكرار التنظيف الدوري كل:</label>
+ <label id="lblThemeSelect">مظهر الواجهة:</label>
+ <label id="lblLanguageSelect">لغة التطبيق:</label>
+ <label id="lblFontFamily">نوع الخط:</label>
+ <label id="lblFontSize">حجم الخط:</label>
+ <label id="lblBoosterDesc">يقوم بتفريغ الذاكرة وتنظيف الكاش الموقّت فوراً قبل تشغيل اللعبة أو البرنامج المفضل لديك للحصول على أقصى سرعة تشغيل وأعلى أولوية للمعالج!</label>
+ <label id="lblPriority">أولوية تشغيل البرنامج:</label>
+ <label id="lblExclusionDesc">البرامج والعمليات في هذه القائمة محمية ولن يتم استثنائها أو تقليل استهلاكها للذاكرة أثناء التنظيف.</label>
+ <label id="lblRamLoadVal">مستوى الاستهلاك: %1%</label>
+ <label id="lblUsedFreeVal">المستخدم: %1 جيجابايت | الفارغ: %2 جيجابايت | الإجمالي: %3 جيجابايت</label>
+ <label id="lblStandbyVal">ذاكرة التخزين المؤقت (Standby): %1 جيجابايت</label>
+ <button id="btnToggleTheme">الوضع الفاتح</button>
+ <button id="btnGithub">حساب GitHub - github.com/alisakkaf</button>
+ <button id="btnFacebook">صفحة الفيسبوك - facebook.com/AliSakkaf.Dev</button>
+ <button id="btnWebsite">الموقع الرسمي - alisakkaf.com</button>
+ <button id="btnBrowseBoostApp">استعراض...</button>
+ <button id="btnLaunchBoostedApp">تفريغ الذاكرة &amp;&amp;&amp; تشغيل التطبيق المسرَّع</button>
+ <button id="btnAddExclusion">إضافة عملية</button>
+ <button id="btnBrowseExclusion">استعراض ملف exe...</button>
+ <button id="btnPickRunningProcess">اختيار برنامج يعمل حالياً...</button>
+ <button id="btnRemoveExclusion">حذف المحدد</button>
+ <button id="btnRefreshProcesses">تحديث</button>
+ <button id="btnMaxOpt">تنظيف شامل وأقصى تحسين (جميع الإجراءات)</button>
+ <button id="btnQuickOpt">تنظيف سريع (تحرير ذاكرة البرامج)</button>
+ <button id="btnPurgeStandby">تفريغ ذاكرة التخزين المؤقت (Standby Cache)</button>
+ <button id="btnFlushModified">تنظيف الصفحات المعدلة (Modified Pages)</button>
+ <button id="btnClearLog">مسح السجل</button>
+ <checkBox id="chkAutoThreshold">تفعيل التنظيف التلقائي عند ارتفاع استهلاك الذاكرة</checkBox>
+ <checkBox id="chkTimerClean">تفعيل التنظيف الدوري المنظم بجدول زمني</checkBox>
+ <checkBox id="chkStartWithWindows">التشغيل تلقائياً مع بدء تشغيل الويندوز</checkBox>
+ <checkBox id="chkMinimizeToTray">التصغير إلى شريط المهام (بجوار الساعة) عند الإغلاق (X)</checkBox>
+ <checkBox id="chkStartMinimized">بدء التشغيل مخفياً في شريط المهام</checkBox>
+ <checkBox id="chkCustomFont">تفعيل تخصيص نوع وحجم خط الواجهة</checkBox>
+ <lineEdit id="qt_spinbox_lineedit">80%</lineEdit>
+ <lineEdit id="qt_spinbox_lineedit">30 دقيقة</lineEdit>
+ <lineEdit id="txtBoostAppPath">حدد مسار ملف التشغيل (مثال: C:\Games\MyGame.exe)</lineEdit>
+ <lineEdit id="txtExclusionInput">أدخل اسم البرنامج أو مسار الملف (مثال: chrome.exe أو C:\Games\Game.exe)...</lineEdit>
+ <lineEdit id="txtSearchProcess">البحث عن عملية باسمها أو بالـ PID...</lineEdit>
+ <groupBox id="groupAppDetails">RAM Cleaner &amp;&amp; Flusher Pro</groupBox>
+ <groupBox id="groupSocialLinks">حسابات المطور &amp;&amp; الروابط الرسمية</groupBox>
+ <groupBox id="groupAutoClean">قواعد التنظيف الآلي للذاكرة</groupBox>
+ <groupBox id="groupStartup">الإقلاع &amp;&amp; التشغيل في الخلفية</groupBox>
+ <groupBox id="groupAppearance">الشكل &amp;&amp; اختيار الثيم</groupBox>
+ <groupBox id="groupLanguage">اختيار اللغة</groupBox>
+ <groupBox id="groupFont">تخصيص الخطوط والحجم</groupBox>
+ <groupBox id="groupBoosterApp">التطبيق المراد تسريعه</groupBox>
+ <groupBox id="groupPriority">فئة أولوية المعالج (CPU)</groupBox>
+ <groupBox id="groupRamStatus">حالة واستخدام الذاكرة العشوائية (RAM)</groupBox>
+ <groupBox id="groupActions">أدوات التحسين والتنظيف</groupBox>
+ <groupBox id="groupLog">سجل العمليات (Log)</groupBox>
+ <tab id="tabDashboard">الرئيسية</tab>
+ <tab id="tabProcesses">العمليات النشطة</tab>
+ <tab id="tabExclusions">قائمة الاستثناءات</tab>
+ <tab id="tabBooster">مسرّع الألعاب والتطبيقات</tab>
+ <tab id="tabSettings">الإعدادات</tab>
+ <tab id="tabAbout">حول البرنامج</tab>
+ <treeHeader id="treeProcesses_col_0">اسم العملية</treeHeader>
+ <treeHeader id="treeProcesses_col_1">معرف العملية (PID)</treeHeader>
+ <treeHeader id="treeProcesses_col_2">استهلاك الذاكرة (RAM)</treeHeader>
+ <treeHeader id="treeProcesses_col_3">الإجراءات</treeHeader>
+
+ <!-- Context Menu Actions -->
+ <str id="actInspectGroup">فحص تشخيصات المجموعة (%1 عملية)</str>
+ <str id="actInspectSingle">فحص التشخيصات التفصيلية</str>
+ <str id="actProtect">حماية (إضافة لقائمة الاستثناءات)</str>
+ <str id="actKillGroup">إنهاء المهمة (إغلاق جميع %1 عملية)</str>
+ <str id="actKillSingle">إنهاء المهمة (إغلاق العملية)</str>
+ <str id="actOpenLocation">فتح موقع الملف</str>
+
+ <!-- Process Group Inspector Dialog -->
+ <str id="dlgGroupWinTitle">تشخيصات مجموعة العمليات - %1 (%2 عملية)</str>
+ <str id="dlgGroupCardTitle">هوية مجموعة العمليات</str>
+ <str id="dlgGroupMainLabel">%1 (مجموعة من %2 عملية نشطة)</str>
+ <str id="dlgGroupSummaryTmpl">إجمالي الذاكرة المستهلكة: &lt;b&gt;%1 ميجابايت&lt;/b&gt; | المتوسط للعملية: &lt;b&gt;%2 ميجابايت&lt;/b&gt; | المقابض المفتوحة: &lt;b&gt;%3&lt;/b&gt;</str>
+ <str id="dlgGroupInstancesTitle">العمليات الفرعية النشطة وخدمات الويندوز</str>
+ <str id="colIcon">الأيقونة</str>
+ <str id="colProcName">اسم العملية</str>
+ <str id="colPid">PID</str>
+ <str id="colWinService">خدمة الويندوز / الوصف</str>
+ <str id="colRamWorkingSet">استهلاك الذاكرة (RAM)</str>
+ <str id="colOpenHandles">المقابض المفتوحة</str>
+ <str id="dlgStdProcessDesc">عملية تنفيذية قياسية</str>
+ <str id="btnProtectGroup">حماية المجموعة</str>
+ <str id="btnTrimGroup">تنظيف ذاكرة المجموعة</str>
+ <str id="btnKillGroup">إغلاق المجموعة</str>
+ <str id="btnClose">إغلاق</str>
+
+ <!-- Process Inspector Dialog -->
+ <str id="dlgSingleWinTitle">فحص العملية - %1 (PID: %2)</str>
+ <str id="dlgSingleCardTitle">هوية العملية</str>
+ <str id="dlgSinglePidLabel">معرف العملية (PID): %1</str>
+ <str id="dlgSingleDiagTitle">التشخيصات الحية ومعلومات النظام</str>
+ <str id="lblExecPath">مسار الملف التنفيذي: %1</str>
+ <str id="lblRamWorkingSetFull">استهلاك الذاكرة الحالية: %1 ميجابايت (%2 بايت)</str>
+ <str id="lblPeakRam">أقصى استهلاك للذاكرة: %1 ميجابايت</str>
+ <str id="lblPagefile">ذاكرة ملف الصفحات: %1 ميجابايت</str>
+ <str id="lblCpuPriority">أولوية المعالج: %1</str>
+ <str id="lblOpenHandles">عدد المقابض المفتوحة: %1</str>
+ <str id="lblStartTime">وقت بدء التشغيل: %1</str>
+ <str id="btnProtectProcess">حماية العملية</str>
+ <str id="btnTrimWorkingSet">تفريغ ذاكرة العملية</str>
+ <str id="btnTaskKill">إغلاق العملية</str>
+
+ <!-- Process Selection Dialog -->
+ <str id="dlgPickWinTitle">اختيار برنامج يعمل حالياً لحمايته</str>
+ <str id="dlgPickSearchPlaceholder">البحث عن برنامج باسمه أو بالـ PID...</str>
+ <str id="btnProtectSelectedProc">حماية البرنامج المحدد</str>
+ <str id="btnCancel">إلغاء</str>
+ <str id="dlgPickNoSelectionTitle">لم يتم الاختيار</str>
+ <str id="dlgPickNoSelectionText">يرجى اختيار برنامج من القائمة أولاً.</str>
+
+ <!-- System Tray Menu -->
+ <str id="trayShow">إظهار الواجهة الرئيسية</str>
+ <str id="trayMax">تنظيف شامل وأقصى تحسين</str>
+ <str id="trayQuick">تنظيف سريع للذاكرة</str>
+ <str id="trayToggleTheme">تغيير المظهر</str>
+ <str id="trayExit">إغلاق البرنامج</str>
+
+ <!-- Process Tree Nodes -->
+ <str id="treeGroupTitle">%1 (%2 عملية)</str>
+ <str id="treeInstancesText">%1 عملية فرعية</str>
+
+ <!-- Activity Log Messages -->
+ <str id="logAppInit">تم تشغيل %1 بنجاح.</str>
+ <str id="logDevInfo">المطور: %1 (%2)</str>
+ <str id="logStartingOp">بدء العملية: %1 | يرجى الانتظار حتى استجابة الذاكرة.</str>
+ <str id="logOpeningGroupDiag">فتح تشخيصات المجموعة للبرنامج '%1' (%2 عملية)...</str>
+ <str id="logOpeningProcDiag">فتح تشخيص العملية للبرنامج '%1' (PID: %2)...</str>
+ <str id="logProtected">تم حماية '%1' وإضافته لقائمة الاستثناءات.</str>
+ <str id="logTerminatedSingle">تم إنهاء العملية '%1' (PID: %2).</str>
+ <str id="logTerminatedGroup">تم إنهاء %1 من أصل %2 عملية للمجموعة '%3'.</str>
+ <str id="logRefreshedProcesses">تم تحديث شجرة العمليات النشطة.</str>
+ <str id="logActivityCleared">تم مسح سجل العمليات.</str>
+ <str id="logSwitchedTheme">تم تغيير مظهر البرنامج إلى: %1</str>
+ <str id="logLanguageSwitched">تم تغيير لغة البرنامج إلى: %1</str>
+ <str id="logTrimmedGroup">تم تفريغ ذاكرة %1 عملية من مجموعة '%2'.</str>
+ <str id="logOpenedFileLoc">تم فتح موقع الملف للبرنامج '%1' في مستكشف الملفات.</str>
+ <str id="logFailTermAccess">فشل إنهاء العملية '%1' (تم رفض الوصول).</str>
+ <str id="logFailOpenTerm">فشل فتح العملية '%1' لإغلاقها.</str>
+ <str id="logSingleTrimDone">تم تفريغ ذاكرة العملية '%1' (PID: %2) بنجاح. تم تحرير: %3 ميجابايت. مستوى الذاكرة: %4% ➔ %5%.</str>
+ <str id="logSingleTrimFail">فشل تفريغ ذاكرة العملية '%1' (تم رفض الوصول).</str>
+ <str id="logExclusionAdded">تمت إضافة '%1' لقائمة الاستثناءات.</str>
+ <str id="logExclusionRemoved">تم إزالة '%1' من قائمة الاستثناءات.</str>
+ <str id="logSetAutoClean">تحديث الإعدادات: التنظيف الآلي %1.</str>
+ <str id="logSetAutoLimit">تحديث الإعدادات: حد التنظيف الآلي %1%.</str>
+ <str id="logSetTimerClean">تحديث الإعدادات: التنظيف الدوري %1.</str>
+ <str id="logSetTimerInterval">تحديث الإعدادات: تكرار التنظيف الدوري %1 دقائق.</str>
+ <str id="logSetStartup">تحديث الإعدادات: التشغيل مع الويندوز %1.</str>
+ <str id="logSetMinTray">تحديث الإعدادات: التصغير بجوار الساعة %1.</str>
+ <str id="logSetStartHidden">تحديث الإعدادات: بدء التشغيل مخفياً %1.</str>
+ <str id="logSetCustomFont">تحديث الإعدادات: تخصيص الخط %1.</str>
+ <str id="logSetFontFamily">تحديث الإعدادات: نوع الخط '%1'.</str>
+ <str id="logSetFontSize">تحديث الإعدادات: حجم الخط %1 pt.</str>
+ <str id="logStartBooster">🚀 جاري تنظيف الذاكرة وتغشيل التطبيق المسرّع '%1'...</str>
+ <str id="logBoosterSuccess">تم تشغيل البرنامج '%1' بنجاح مع أولوية: %2.</str>
+ <str id="logBoosterFail">فشل تشغيل البرنامج أو رفع أولوية المعالج.</str>
+ <str id="txtEnabled">مفعّل</str>
+ <str id="txtDisabled">معطّل</str>
+ <str id="themeDark">الداكن</str>
+ <str id="themeLight">الفاتح</str>
+
+ <!-- Action Titles in Log -->
+ <str id="actTitleMax">تنظيف شامل وأقصى تحسين (تفريغ كامل للذاكرة)</str>
+ <str id="actTitleQuick">تنظيف سريع (تفريغ ذاكرة البرامج فقط)</str>
+ <str id="actTitlePurge">تفريغ قائمة التخزين المؤقت (Standby Cache)</str>
+ <str id="actTitleFlush">تفريغ الصفحات المعدلة (Modified Pages) إلى القرص</str>
+ <str id="actTitleTrimProc">تقليل استهلاك الذاكرة للعملية '%1' (PID: %2)</str>
+
+ <!-- Log Optimization Report Keys -->
+ <str id="reportActionInit">بدء الإجراء التنفيذي: %1</str>
+ <str id="reportInitState">حالة ذاكرة النظام قبل التنظيف (BEFORE):</str>
+ <str id="reportPhysRamLoad">مستوى استهلاك الذاكرة:</str>
+ <str id="reportUsedMem">الذاكرة المستهلكة:</str>
+ <str id="reportTotalInstalled">إجمالي الذاكرة:</str>
+ <str id="reportAvailable">الذاكرة المتاحة:</str>
+ <str id="reportStandbyCache">ذاكرة التخزين المؤقت (Standby Cache):</str>
+ <str id="reportKernelSummary">ملخص تنفيذ نواة نظام الويندوز (WIN32 KERNEL):</str>
+ <str id="reportProcTrim">تفريغ ذاكرة البرامج (Working Sets):</str>
+ <str id="reportProcTrimmedCount">عملية تم تنظيفها</str>
+ <str id="reportProtectedCount">محمية في الاستثناءات:</str>
+ <str id="reportSkippedCount">عمليات نظام محمية:</str>
+ <str id="reportAfterState">حالة ذاكرة النظام بعد التنظيف (AFTER):</str>
+ <str id="reportLoadReduction">انخفاض مستوى الاستهلاك:</str>
+ <str id="reportTotalReclaimed">إجمالي الذاكرة المحررة بالنظام:</str>
+ <str id="reportExecTime">زمن التنفيذ:</str>
+
+ <!-- Priority Class Names -->
+ <str id="prioNormal">عادي</str>
+ <str id="prioHigh">أولوية عالية</str>
+ <str id="prioAboveNormal">أعلى من العادي</str>
+ <str id="prioBelowNormal">أقل من العادي</str>
+ <str id="prioIdle">منخفض للغاية (خامل)</str>
+ <str id="prioRealtime">وقت حقيقي (أقصى أولوية)</str>
+</widgetInfo>
