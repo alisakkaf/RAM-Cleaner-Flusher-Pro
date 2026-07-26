@@ -1,0 +1,56 @@
+# =========================================================================
+#               RAM CLEANER & FLUSHER PRO - GIT IGNORE
+# =========================================================================
+
+# Build & Bin Output Directories
+bin/
+build/
+release/
+debug/
+
+# Qt & IDE Specific Files
+*.user
+*.user.*
+.qtcreator/
+.qt/
+*.pro.user*
+*.pro.user.*
+*.qmlc
+*.jsc
+*.pro.shared
+
+# C++ Build Artifacts & Objects
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dll
+*.exe
+*.exp
+*.pdb
+*.ilk
+
+# Compressed & Release Archives
+*.zip
+*.7z
+*.rar
+*.tar.gz
+
+# Photoshop & Raw Graphics Source Files (Keep app_icon.png and icons, exclude raw PSD)
+*.psd
+Untitled-1.psd
+
+# Local Repository Management Scripts & Release Notes (Do not push to public git)
+GITHUB_SETUP_COMMANDS.md
+RELEASE_NOTES_v1.0.0.md
+
+# Operating System Files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Temporary & Log Files
+*.tmp
+*.log
+*.bak
