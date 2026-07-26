@@ -54,3 +54,24 @@ Desktop.ini
 *.tmp
 *.log
 *.bak
+
+facebook.md
+xda.md
+website_article.md
+Wiki.md
+RELEASE_NOTES_v1.1.0.md
+RELEASE_NOTES_v1.0.0.md
+featured_image.jpg
+facebook_icon.png
+github_icon.png
+website_icon.png
+GITHUB_SETUP_COMMANDS.md
+
+# Marketing & Social Media Posts (local only)
+facebook.md
+xda.md
+website_article.md
+Wiki.md
+GITHUB_SETUP_COMMANDS.md
+RELEASE_NOTES_v1.0.0.md
+RELEASE_NOTES_v1.1.0.md
