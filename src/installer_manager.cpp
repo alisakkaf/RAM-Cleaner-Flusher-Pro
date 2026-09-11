@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QDirIterator>
 #include <QProcess>
 #include <QCoreApplication>
 #include <QMessageBox>
@@ -15,13 +16,18 @@
 #include <QDebug>
 
 #include <windows.h>
+#include <tlhelp32.h>
 #include <shlobj.h>
 #include <shobjidl.h>
+#include <shldisp.h>
 #include <dwmapi.h>
 
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
 #define DWMWA_USE_IMMERSIVE_DARK_MODE 20
 #endif
+
+// XML Helper declaration
+QString trXml(const QString &key, const QString &defaultVal = QString());
 
 // ─── Sleek Frameless Installation / Update Progress Dialog ─────────────────
 InstallProgressDialog::InstallProgressDialog(bool isUpdate, QWidget *parent)
@@ -64,7 +70,7 @@ InstallProgressDialog::InstallProgressDialog(bool isUpdate, QWidget *parent)
 
     // Top Frameless Header
     QHBoxLayout *topBarLayout = new QHBoxLayout();
-    QLabel *lblHeader = new QLabel(isUpdate ? QString("%1 • Applying Update...").arg(APP_NAME) : QString("%1 • Self-Installing...").arg(APP_NAME), card);
+    QLabel *lblHeader = new QLabel(isUpdate ? trXml("dlgInstallTitleUpdate", "%1 • Applying Update...").arg(APP_NAME) : trXml("dlgInstallTitleSelf", "%1 • Self-Installing...").arg(APP_NAME), card);
     lblHeader->setStyleSheet("font-size: 9.5pt; font-weight: 600; color: #38bdf8;");
 
     m_btnClose = new QPushButton("x", card);
@@ -114,7 +120,7 @@ InstallProgressDialog::InstallProgressDialog(bool isUpdate, QWidget *parent)
         "}"
     );
 
-    m_lblStatus = new QLabel("Initializing setup environment...", card);
+    m_lblStatus = new QLabel(trXml("lblInitSetupEnv", "Initializing setup environment..."), card);
     m_lblStatus->setStyleSheet("font-size: 8.5pt; color: " + QString(isDark ? "#a1a1aa" : "#64748b") + ";");
 
     cardLayout->addWidget(m_progressBar);
@@ -232,14 +238,37 @@ bool InstallerManager::createDesktopShortcut(const QString &targetExePath) {
 
 bool InstallerManager::killRunningInstances() {
     DWORD currentPid = GetCurrentProcessId();
-    QProcess::execute("taskkill", QStringList() << "/F" << "/IM" << APP_EXE_NAME << "/FI" << QString("PID ne %1").arg(currentPid));
+    HANDLE hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (hSnap == INVALID_HANDLE_VALUE) return false;
+
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(hSnap, &pe)) {
+        do {
+            if (pe.th32ProcessID != currentPid && pe.th32ProcessID != 0 && pe.th32ProcessID != 4) {
+                QString procName = QString::fromWCharArray(pe.szExeFile);
+                if (procName.compare(APP_EXE_NAME, Qt::CaseInsensitive) == 0 ||
+                    procName.compare(QString(APP_EXE_NAME) + ".exe", Qt::CaseInsensitive) == 0) {
+                    HANDLE hProc = OpenProcess(PROCESS_TERMINATE, FALSE, pe.th32ProcessID);
+                    if (hProc) {
+                        TerminateProcess(hProc, 0);
+                        CloseHandle(hProc);
+                    }
+                }
+            }
+        } while (Process32NextW(hSnap, &pe));
+    }
+    CloseHandle(hSnap);
     return true;
 }
 
 bool InstallerManager::grantFullFilePermissions(const QString &filePath) {
-    QString nativePath = QDir::toNativeSeparators(filePath);
-    QProcess::execute("icacls", QStringList() << nativePath << "/grant" << "Administrators:F" << "/grant" << "Users:F" << "/T");
-    return true;
+    if (filePath.isEmpty()) return false;
+    QFileDevice::Permissions p = QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner |
+                                  QFileDevice::ReadUser  | QFileDevice::WriteUser  | QFileDevice::ExeUser  |
+                                  QFileDevice::ReadGroup | QFileDevice::WriteGroup | QFileDevice::ExeGroup |
+                                  QFileDevice::ReadOther | QFileDevice::WriteOther | QFileDevice::ExeOther;
+    return QFile::setPermissions(filePath, p);
 }
 
 bool InstallerManager::performSelfInstallation(QWidget *parentWidget) {
@@ -250,80 +279,291 @@ bool InstallerManager::performSelfInstallation(QWidget *parentWidget) {
     InstallProgressDialog dlg(false, parentWidget);
     dlg.show();
 
-    dlg.setStatus("Step 1/5: Terminating background instances...", 15);
+    dlg.setStatus(trXml("lblStepTermBg", "Step 1/5: Terminating background instances..."), 15);
     killRunningInstances();
     Sleep(400);
 
     QString installDir = getProgramFilesPath();
-    dlg.setStatus(QString("Step 2/5: Creating installation folder: %1").arg(installDir), 35);
+    dlg.setStatus(trXml("lblStepCreateInstallDir", "Step 2/5: Creating installation folder: %1").arg(installDir), 35);
     QDir().mkpath(installDir);
 
     QString targetExePath = QDir(installDir).filePath(APP_EXE_NAME);
     QString currentExe = getCurrentExePath();
 
-    dlg.setStatus("Step 3/5: Deploying executable to Program Files...", 55);
+    dlg.setStatus(trXml("lblStepDeployProgFiles", "Step 3/5: Deploying executable to Program Files..."), 55);
     if (QFile::exists(targetExePath)) {
         QFile::remove(targetExePath);
     }
     if (!QFile::copy(currentExe, targetExePath)) {
-        dlg.setCompletedError(QString("Failed to copy binary to %1").arg(targetExePath));
+        dlg.setCompletedError(trXml("msgErrCopyBin", "Failed to copy binary to %1").arg(targetExePath));
         dlg.exec();
         return false;
     }
 
-    dlg.setStatus("Step 4/5: Granting Win32 file permissions...", 75);
+    dlg.setStatus(trXml("lblStepGrantPerms", "Step 4/5: Granting Win32 file permissions..."), 75);
     grantFullFilePermissions(installDir);
 
-    dlg.setStatus("Step 5/5: Creating Desktop Shortcut...", 90);
+    dlg.setStatus(trXml("lblStepCreateShortcut", "Step 5/5: Creating Desktop Shortcut..."), 90);
     createDesktopShortcut(targetExePath);
 
-    dlg.setCompletedSuccess("Installation completed! Launching app...");
-    Sleep(10);
+    dlg.setCompletedSuccess(trXml("msgSelfInstallSuccess", "Installation completed! Launching app..."));
+    // Sleep(10);
 
     // Launch newly installed app from Program Files
     std::wstring wExe = QDir::toNativeSeparators(targetExePath).toStdWString();
-    ShellExecuteW(NULL, L"runas", wExe.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    ShellExecuteW(NULL, L"open", wExe.c_str(), NULL, NULL, SW_SHOWNORMAL);
 
     QCoreApplication::quit();
     exit(0);
     return true;
 }
 
+// ─── Extract .exe from .zip using official Win32 COM Shell API (no PowerShell) ─
+// Uses IShellDispatch / Folder / FolderItems — the standard Windows ZIP extraction
+// method available natively on Windows 7, 8, 10, 11 without external libraries.
+static bool extractExeFromZip(const QString &zipPath, const QString &destDir, const QString &exeName) {
+    HRESULT hr = CoInitialize(NULL);
+    bool coWasInit = SUCCEEDED(hr);  // track if we initialized COM here
+
+    bool success = false;
+
+    do {
+        // ── 1. Create a Shell COM instance ──────────────────────────────────
+        IShellDispatch *pISD = nullptr;
+        hr = CoCreateInstance(CLSID_Shell, NULL, CLSCTX_INPROC_SERVER,
+                              IID_IShellDispatch,
+                              reinterpret_cast<void **>(&pISD));
+        if (FAILED(hr) || !pISD) break;
+
+        // ── 2. Open the ZIP file as a Shell Folder namespace ─────────────────
+        VARIANT vZip;
+        VariantInit(&vZip);
+        V_VT(&vZip)   = VT_BSTR;
+        V_BSTR(&vZip) = SysAllocString(QDir::toNativeSeparators(zipPath).toStdWString().c_str());
+
+        Folder *pZipFolder = nullptr;
+        hr = pISD->NameSpace(vZip, &pZipFolder);
+        VariantClear(&vZip);
+
+        if (FAILED(hr) || !pZipFolder) { pISD->Release(); break; }
+
+        // ── 3. Open the destination folder as a Shell Folder namespace ───────
+        VARIANT vDest;
+        VariantInit(&vDest);
+        V_VT(&vDest)   = VT_BSTR;
+        V_BSTR(&vDest) = SysAllocString(QDir::toNativeSeparators(destDir).toStdWString().c_str());
+
+        Folder *pDestFolder = nullptr;
+        hr = pISD->NameSpace(vDest, &pDestFolder);
+        VariantClear(&vDest);
+
+        if (FAILED(hr) || !pDestFolder) {
+            pZipFolder->Release();
+            pISD->Release();
+            break;
+        }
+
+        // ── 4. Enumerate all items inside the ZIP ────────────────────────────
+        FolderItems *pItems = nullptr;
+        hr = pZipFolder->Items(&pItems);
+        if (FAILED(hr) || !pItems) {
+            pDestFolder->Release();
+            pZipFolder->Release();
+            pISD->Release();
+            break;
+        }
+
+        // ── 5. CopyHere into destination ─────────────────────────────────────
+        // Flags: 4  = no progress dialog
+        //        16 = respond Yes to all dialogs (overwrite)
+        //        512= no confirmation dialog for file ops
+        //        1024= no error UI
+        VARIANT vItems;
+        VariantInit(&vItems);
+        V_VT(&vItems)       = VT_DISPATCH;
+        V_DISPATCH(&vItems) = pItems;
+        pItems->AddRef();
+
+        VARIANT vOptions;
+        VariantInit(&vOptions);
+        V_VT(&vOptions) = VT_I4;
+        V_I4(&vOptions) = 4 | 16 | 512 | 1024;
+
+        hr = pDestFolder->CopyHere(vItems, vOptions);
+        VariantClear(&vItems);
+
+        // COM Shell extraction is asynchronous — poll until the exe appears
+        if (SUCCEEDED(hr)) {
+            QString targetExe = QDir(destDir).filePath(exeName);
+            for (int wait = 0; wait < 30; ++wait) {   // up to 15 seconds
+                if (QFile::exists(targetExe) && QFileInfo(targetExe).size() > 1024) {
+                    success = true;
+                    break;
+                }
+                Sleep(500);
+                QCoreApplication::processEvents();
+            }
+        }
+
+        pItems->Release();
+        pDestFolder->Release();
+        pZipFolder->Release();
+        pISD->Release();
+
+    } while (false);
+
+    if (coWasInit) CoUninitialize();
+
+    // ── Fallback: search subdirectories if exe landed in a sub-folder ────────
+    if (!success) {
+        QString directPath = QDir(destDir).filePath(exeName);
+        if (QFile::exists(directPath)) {
+            success = true;
+        } else {
+            QDirIterator it(destDir, QStringList() << exeName,
+                            QDir::Files, QDirIterator::Subdirectories);
+            if (it.hasNext()) {
+                it.next();
+                // Move it to the expected flat location
+                if (QFile::rename(it.filePath(), directPath))
+                    success = true;
+            }
+        }
+    }
+
+    return success;
+}
+
+// ─── Safely remove a locked exe using rename + Win32 MoveFileEx fallback ────
+static bool safeRemoveExe(const QString &exePath) {
+    if (!QFile::exists(exePath))
+        return true;
+
+    // Step 1: Grant write permissions first using Qt native API
+    QFile::setPermissions(exePath,
+        QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner |
+        QFileDevice::ReadUser  | QFileDevice::WriteUser  | QFileDevice::ExeUser  |
+        QFileDevice::ReadGroup | QFileDevice::WriteGroup | QFileDevice::ExeGroup |
+        QFileDevice::ReadOther | QFileDevice::WriteOther | QFileDevice::ExeOther);
+
+    // Step 2: Try direct removal with retry
+    for (int attempt = 0; attempt < 5; ++attempt) {
+        if (QFile::remove(exePath))
+            return true;
+        Sleep(300);
+    }
+
+    // Step 3: Rename to .old so we can overwrite target path
+    QString oldPath = exePath + ".old";
+    QFile::remove(oldPath);  // remove stale .old if exists
+    if (QFile::rename(exePath, oldPath)) {
+        // Schedule .old for deletion on next reboot via Win32
+        MoveFileExW(oldPath.toStdWString().c_str(), NULL, MOVEFILE_DELAY_UNTIL_REBOOT);
+        return true;  // target path is now free
+    }
+
+    return false;
+}
+
 bool InstallerManager::performAppUpdate(const QString &zipOrExePath, QWidget *parentWidget) {
     InstallProgressDialog dlg(true, parentWidget);
     dlg.show();
 
-    dlg.setStatus("Step 1/5: Terminating active application processes...", 20);
+    // ── Step 1: Kill other running instances (keep current alive for now) ──
+    dlg.setStatus(trXml("lblStepTermOther", "Step 1/5: Terminating other application instances..."), 15);
     killRunningInstances();
-    Sleep(500);
+    Sleep(400);
 
-    QString installDir = getProgramFilesPath();
+    QString installDir   = getProgramFilesPath();
     QDir().mkpath(installDir);
     QString targetExePath = QDir(installDir).filePath(APP_EXE_NAME);
+    QString tempExtractDir = QDir(QDir::tempPath()).filePath("RamCleanerUpdate_Extract");
 
-    dlg.setStatus("Step 2/5: Replacing executable with updated binary...", 50);
-    if (QFile::exists(targetExePath)) {
-        QFile::remove(targetExePath);
+    // ── Step 2: Extract the downloaded ZIP to temp folder ──
+    dlg.setStatus(trXml("lblStepExtractZip", "Step 2/5: Extracting update archive..."), 35);
+    QDir(tempExtractDir).removeRecursively();
+    QDir().mkpath(tempExtractDir);
+
+    bool isZip = zipOrExePath.endsWith(".zip", Qt::CaseInsensitive);
+    QString newExePath;
+
+    if (isZip) {
+        if (!extractExeFromZip(zipOrExePath, tempExtractDir, APP_EXE_NAME)) {
+            dlg.setCompletedError(trXml("msgErrExtractZip", "Failed to extract update archive. Please download manually."));
+            dlg.exec();
+            QDir(tempExtractDir).removeRecursively();
+            return false;
+        }
+        newExePath = QDir(tempExtractDir).filePath(APP_EXE_NAME);
+    } else {
+        // Already an exe
+        newExePath = zipOrExePath;
     }
 
-    if (!QFile::copy(zipOrExePath, targetExePath)) {
-        dlg.setCompletedError(QString("Failed to copy update file to %1").arg(targetExePath));
+    // Verify extracted exe exists and has non-zero size
+    QFileInfo newExeInfo(newExePath);
+    if (!newExeInfo.exists() || newExeInfo.size() < 1024) {
+        dlg.setCompletedError(trXml("msgErrInvalidExtracted", "Extracted file appears invalid or corrupted."));
+        dlg.exec();
+        QDir(tempExtractDir).removeRecursively();
+        return false;
+    }
+
+    // ── Step 3: Remove old exe safely (rename-on-reboot fallback) ──
+    dlg.setStatus(trXml("lblStepReplaceExe", "Step 3/5: Replacing old executable..."), 55);
+    if (!safeRemoveExe(targetExePath)) {
+        dlg.setCompletedError(trXml("msgErrCannotReplaceLocked", "Cannot replace locked file:\n%1\nClose all instances and try again.").arg(targetExePath));
+        dlg.exec();
+        QDir(tempExtractDir).removeRecursively();
+        return false;
+    }
+
+    // ── Step 4: Copy new exe to install dir ──
+    dlg.setStatus(trXml("lblStepDeployBin", "Step 4/5: Deploying updated binary..."), 75);
+
+    // Grant permissions on destination dir first
+    grantFullFilePermissions(installDir);
+    QFile::setPermissions(installDir,
+        QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner |
+        QFileDevice::ReadUser  | QFileDevice::WriteUser  | QFileDevice::ExeUser  |
+        QFileDevice::ReadGroup | QFileDevice::WriteGroup | QFileDevice::ExeGroup |
+        QFileDevice::ReadOther | QFileDevice::WriteOther | QFileDevice::ExeOther);
+
+    bool copyOk = false;
+    for (int attempt = 0; attempt < 4; ++attempt) {
+        if (QFile::copy(newExePath, targetExePath)) {
+            copyOk = true;
+            break;
+        }
+        Sleep(400);
+    }
+
+    QDir(tempExtractDir).removeRecursively();
+    QFile::remove(zipOrExePath);  // clean up downloaded zip
+
+    if (!copyOk) {
+        dlg.setCompletedError(trXml("msgErrFailedDeploy", "Failed to deploy update to:\n%1").arg(targetExePath));
         dlg.exec();
         return false;
     }
 
-    dlg.setStatus("Step 3/5: Setting full file permissions...", 75);
-    grantFullFilePermissions(installDir);
+    // Set full permissions on new exe
+    QFile::setPermissions(targetExePath,
+        QFileDevice::ReadOwner | QFileDevice::WriteOwner | QFileDevice::ExeOwner |
+        QFileDevice::ReadUser  | QFileDevice::WriteUser  | QFileDevice::ExeUser  |
+        QFileDevice::ReadGroup | QFileDevice::WriteGroup | QFileDevice::ExeGroup |
+        QFileDevice::ReadOther | QFileDevice::WriteOther | QFileDevice::ExeOther);
+    grantFullFilePermissions(targetExePath);
 
-    dlg.setStatus("Step 4/5: Updating Desktop Shortcut...", 90);
+    // ── Step 5: Shortcut + Relaunch ──
+    dlg.setStatus(trXml("lblStepUpdateShortcut", "Step 5/5: Updating Desktop Shortcut & restarting..."), 92);
     createDesktopShortcut(targetExePath);
 
-    dlg.setCompletedSuccess("Update applied! Restarting RAM Cleaner Pro...");
-    Sleep(10);
+    dlg.setCompletedSuccess(trXml("msgUpdateSuccess", "Update applied successfully! Restarting..."));
 
-    // Relaunch updated process
+    // Sleep(400);
     std::wstring wExe = QDir::toNativeSeparators(targetExePath).toStdWString();
-    ShellExecuteW(NULL, L"runas", wExe.c_str(), NULL, NULL, SW_SHOWNORMAL);
+    ShellExecuteW(NULL, L"open", wExe.c_str(), NULL, NULL, SW_SHOWNORMAL);
 
     QCoreApplication::quit();
     exit(0);
