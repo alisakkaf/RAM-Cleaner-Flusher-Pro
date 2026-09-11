@@ -21,6 +21,8 @@ public:
     void setTargetProcess(DWORD pid, const QString &procName);
 
 signals:
+    void settlingStarted(const QString &waitText);
+    void settlingTick(int currentSec, int totalSec);
     void optimizationCompleted(const QString &actionTitle, const OptimizationResult &res);
     void singleProcessTrimCompleted(DWORD pid, const QString &procName, bool success, double savedMB, int beforeLoad, int afterLoad);
 
