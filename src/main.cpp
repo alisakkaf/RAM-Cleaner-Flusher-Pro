@@ -7,6 +7,8 @@
 #include "memory_cleaner.h"
 #include <QApplication>
 #include <QCommandLineParser>
+#include <QDir>
+#include <QFile>
 #include <QMessageBox>
 #include <QMetaType>
 
@@ -84,6 +86,16 @@ int main(int argc, char *argv[]) {
     app.setOrganizationName(APP_COMPANY);
     app.setApplicationVersion(APP_VERSION_STR);
 
+    // Clean up any leftover update backup files (.old) on startup
+    {
+        QString appDir = QCoreApplication::applicationDirPath();
+        QDir dir(appDir);
+        QStringList oldFiles = dir.entryList(QStringList() << "*.old", QDir::Files);
+        for (const QString &oldFile : oldFiles) {
+            QFile::remove(dir.filePath(oldFile));
+        }
+    }
+
     // Register custom struct type for QueuedConnection signal/slot threading
     qRegisterMetaType<OptimizationResult>("OptimizationResult");
 
@@ -100,9 +112,9 @@ int main(int argc, char *argv[]) {
     parser.process(app);
 
     // Automatic Win32 Self-Installation check
-    if (!parser.isSet(portableOption) && !InstallerManager::isRunningFromProgramFiles()) {
-        InstallerManager::instance()->performSelfInstallation();
-    }
+    // if (!parser.isSet(portableOption) && !InstallerManager::isRunningFromProgramFiles()) {
+        // InstallerManager::instance()->performSelfInstallation();
+    // }
 
     SettingsManager settings;
     bool startMinimized = parser.isSet(minimizedOption) || settings.isStartMinimized();
