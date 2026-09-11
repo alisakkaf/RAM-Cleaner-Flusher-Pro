@@ -70,6 +70,8 @@ private slots:
     void on_btnClearLog_clicked();
 
     // Asynchronous Worker Slots
+    void onWorkerSettlingStarted(const QString &actionTitle);
+    void onWorkerSettlingTick(int currentSec, int totalSec);
     void onWorkerOptimizationCompleted(const QString &actionTitle, const OptimizationResult &res);
     void onWorkerSingleProcessTrimCompleted(DWORD pid, const QString &procName, bool success, double savedMB, int beforeLoad, int afterLoad);
 
@@ -92,6 +94,12 @@ private slots:
     void on_chkStartWithWindows_toggled(bool checked);
     void on_chkMinimizeToTray_toggled(bool checked);
     void on_chkStartMinimized_toggled(bool checked);
+    void on_chkDeveloperMode_toggled(bool checked);
+
+    // Static helper formatters
+    static QString formatRamSizeMB(double mb);
+    static QString formatRamSizeGB(double gb);
+    static QString stripExeExtension(const QString &procName);
 
     // Font settings slots
     void on_chkCustomFont_toggled(bool checked);
