@@ -3,6 +3,9 @@
 #include "version.h"
 #include "icon_provider.h"
 
+// XML Helper declaration
+QString trXml(const QString &key, const QString &defaultVal = QString());
+
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QJsonDocument>
@@ -80,7 +83,7 @@ UpdateAvailableDialog::UpdateAvailableDialog(const UpdateInfo &info, QWidget *pa
     QLabel *lblIcon = new QLabel(card);
     lblIcon->setPixmap(IconProvider::getIcon(IconProvider::RamIcon).pixmap(24, 24));
 
-    QLabel *lblHeader = new QLabel(QString("%1 • Software Updater").arg(APP_NAME), card);
+    QLabel *lblHeader = new QLabel(trXml("dlgUpdateAvailableTitle", "%1 • Software Updater").arg(APP_NAME), card);
     lblHeader->setStyleSheet("font-size: 9pt; font-weight: 600; color: #38bdf8;");
 
     QPushButton *btnClose = new QPushButton("X", card);
@@ -114,10 +117,10 @@ UpdateAvailableDialog::UpdateAvailableDialog(const UpdateInfo &info, QWidget *pa
     QVBoxLayout *metaLayout = new QVBoxLayout();
     metaLayout->setSpacing(2);
 
-    QLabel *lblTitle = new QLabel(QString("New Release Available: <b>Version %1</b>").arg(info.version), card);
+    QLabel *lblTitle = new QLabel(trXml("lblNewReleaseAvail", "New Release Available: <b>Version %1</b>").arg(info.version), card);
     lblTitle->setStyleSheet("font-size: 10.5pt; font-weight: 600; color: " + QString(isDark ? "#ffffff" : "#0f172a") + ";");
 
-    QLabel *lblSub = new QLabel(QString("Current Installed: %1 | Release Date: %2")
+    QLabel *lblSub = new QLabel(trXml("lblCurrentInstalled", "Current Installed: %1 | Release Date: %2")
                                    .arg(APP_VERSION_STR).arg(info.releaseDate.isEmpty() ? "Latest" : info.releaseDate), card);
     lblSub->setStyleSheet("font-size: 8.5pt; color: " + QString(isDark ? "#a1a1aa" : "#71717a") + ";");
 
@@ -161,7 +164,7 @@ UpdateAvailableDialog::UpdateAvailableDialog(const UpdateInfo &info, QWidget *pa
     QHBoxLayout *btnLayout = new QHBoxLayout();
     btnLayout->setSpacing(8);
 
-    QPushButton *btnDownload = new QPushButton("Update Automatically", card);
+    QPushButton *btnDownload = new QPushButton(trXml("btnUpdateAuto", "Update Automatically"), card);
     btnDownload->setIcon(IconProvider::getIcon(IconProvider::RocketIcon));
     btnDownload->setStyleSheet(
         "QPushButton {"
@@ -177,7 +180,7 @@ UpdateAvailableDialog::UpdateAvailableDialog(const UpdateInfo &info, QWidget *pa
     );
     connect(btnDownload, &QPushButton::clicked, this, [this]() { done(DownloadNow); });
 
-    QPushButton *btnBrowser = new QPushButton("Open GitHub", card);
+    QPushButton *btnBrowser = new QPushButton(trXml("btnOpenGithub", "Open GitHub"), card);
     btnBrowser->setIcon(IconProvider::getIcon(IconProvider::GithubIcon));
     btnBrowser->setStyleSheet(
         "QPushButton {"
@@ -197,7 +200,7 @@ UpdateAvailableDialog::UpdateAvailableDialog(const UpdateInfo &info, QWidget *pa
         done(OpenBrowser);
     });
 
-    QPushButton *btnSkip = new QPushButton("Later", card);
+    QPushButton *btnSkip = new QPushButton(trXml("btnLater", "Later"), card);
     btnSkip->setStyleSheet(
         "QPushButton {"
         "    background-color: transparent;"
@@ -279,7 +282,7 @@ UpdateDownloadDialog::UpdateDownloadDialog(const UpdateInfo &info, QWidget *pare
 
     // Top Frameless Bar
     QHBoxLayout *topBarLayout = new QHBoxLayout();
-    QLabel *lblHeader = new QLabel(QString("Downloading Update %1...").arg(info.version), card);
+    QLabel *lblHeader = new QLabel(trXml("dlgDownloadingTitle", "Downloading Update %1...").arg(info.version), card);
     lblHeader->setStyleSheet("font-size: 9.5pt; font-weight: 600; color: #38bdf8;");
 
     QPushButton *btnClose = new QPushButton("✕", card);
@@ -328,11 +331,11 @@ UpdateDownloadDialog::UpdateDownloadDialog(const UpdateInfo &info, QWidget *pare
         "}"
     );
 
-    m_lblMetrics = new QLabel("Connecting to update server...", card);
+    m_lblMetrics = new QLabel(trXml("lblConnServer", "Connecting to update server..."), card);
     m_lblMetrics->setStyleSheet("font-size: 8.5pt; color: " + QString(isDark ? "#a1a1aa" : "#64748b") + ";");
 
     QHBoxLayout *btnLayout = new QHBoxLayout();
-    m_btnCancel = new QPushButton("Cancel", card);
+    m_btnCancel = new QPushButton(trXml("btnCancel", "Cancel"), card);
     m_btnCancel->setStyleSheet(
         "QPushButton {"
         "    background-color: " + QString(isDark ? "#27272a" : "#f1f5f9") + ";"
@@ -393,7 +396,7 @@ void UpdateDownloadDialog::startDownload() {
 
     m_file = new QFile(m_destinationPath, this);
     if (!m_file->open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        QMessageBox::critical(this, "Download Error", QString("Failed to create temporary file:\n%1").arg(m_destinationPath));
+        QMessageBox::critical(this, trXml("msgDlErrorTitle", "Download Error"), trXml("msgDlErrorFailedTemp", "Failed to create temporary file:\n%1").arg(m_destinationPath));
         reject();
         return;
     }
@@ -469,7 +472,7 @@ void UpdateDownloadDialog::onDownloadFinished() {
 
         m_progressBar->setValue(100);
         m_lblMetrics->setStyleSheet("font-size: 8.5pt; color: #10b981; font-weight: bold;");
-        m_lblMetrics->setText("Download completed successfully!");
+        m_lblMetrics->setText(trXml("msgDlSuccess", "Download completed successfully!"));
 
         emit downloadCompleted(m_destinationPath);
         accept();
@@ -477,7 +480,7 @@ void UpdateDownloadDialog::onDownloadFinished() {
         if (m_file && m_file->isOpen()) m_file->close();
         QFile::remove(m_destinationPath);
 
-        QMessageBox::critical(this, "Download Failed", QString("Network error occurred while downloading update:\n%1").arg(m_reply->errorString()));
+        QMessageBox::critical(this, trXml("msgDlFailedTitle", "Download Failed"), trXml("msgDlFailedNetErr", "Network error occurred while downloading update:\n%1").arg(m_reply->errorString()));
         reject();
     }
 }
