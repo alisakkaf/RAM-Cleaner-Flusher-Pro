@@ -129,8 +129,9 @@
  <!-- Activity Log Messages -->
  <str id="logAppInit">تم تشغيل %1 بنجاح.</str>
  <str id="logDevInfo">المطور: %1 (%2)</str>
- <str id="logStartingOp">بدء العملية: %1 | يرجى الانتظار حتى استجابة الذاكرة.</str>
- <str id="logOpeningGroupDiag">فتح تشخيصات المجموعة للبرنامج '%1' (%2 عملية)...</str>
+ <str id="logStartingOp">بدء العملية: %1</str>
+ <str id="logWaitingSettling">يرجى الانتظار حتى استقرار الذاكرة</str>
+ <str id="logOpeningGroupDiag">فتح تشخيص المجموعة '%1' (%2 عملية)...</str>
  <str id="logOpeningProcDiag">فتح تشخيص العملية للبرنامج '%1' (PID: %2)...</str>
  <str id="logProtected">تم حماية '%1' وإضافته لقائمة الاستثناءات.</str>
  <str id="logTerminatedSingle">تم إنهاء العملية '%1' (PID: %2).</str>
@@ -197,4 +198,63 @@
  <str id="prioBelowNormal">أقل من العادي</str>
  <str id="prioIdle">منخفض للغاية (خامل)</str>
  <str id="prioRealtime">وقت حقيقي (أقصى أولوية)</str>
+
+ <!-- Process Termination Dialogs -->
+ <str id="msgConfirmKillSingle">هل أنت تأكد من أنك تريد إنهاء العملية '%1' (PID: %2)؟</str>
+ <str id="msgConfirmKillGroup">هل أنت تأكد من أنك تريد إنهاء جميع %1 عملية لمجموعة البرامج '%2'؟</str>
+ <str id="btnYes">نعم</str>
+ <str id="btnNo">لا</str>
+ <str id="titleTermError">خطأ في إنهاء العملية</str>
+ <str id="msgCannotTermSys">لا يمكن إنهاء هذه العملية الأساسية الخاصة بنظام التشغيل.</str>
+
+ <!-- Installer & Updater Dialogs -->
+ <str id="dlgUpdateAvailableTitle">%1 • محدّث البرامج</str>
+ <str id="lblNewReleaseAvail">تحديث جديد متوفر: الإصدار %1</str>
+ <str id="lblCurrentInstalled">الإصدار المثبت حالياً: %1 | تاريخ الإصدار: %2</str>
+ <str id="btnUpdateAuto">تحديث تلقائي فوراً</str>
+ <str id="btnOpenGithub">فتح موقع GitHub</str>
+ <str id="btnLater">لاحقاً</str>
+ <str id="dlgDownloadingTitle">جاري تحميل التحديث %1...</str>
+ <str id="lblConnServer">جاري الاتصال بسيرفر التحديثات...</str>
+ <str id="msgDlErrorTitle">خطأ في التحميل</str>
+ <str id="msgDlErrorFailedTemp">فشل إنشاء الملف المؤقت:\n%1</str>
+ <str id="msgDlSuccess">تم اكتمال التحميل بنجاح!</str>
+ <str id="msgDlFailedTitle">فشل التحميل</str>
+ <str id="msgDlFailedNetErr">حدث خطأ في الاتصال أثناء تحميل التحديث:\n%1</str>
+ <str id="dlgInstallTitleUpdate">%1 • جاري تطبيق التحديث...</str>
+ <str id="dlgInstallTitleSelf">%1 • التثبيت الذاتي...</str>
+ <str id="lblInitSetupEnv">جاري تهيئة بيئة التثبيت...</str>
+ <str id="lblStepTermOther">الخطوة 1/5: إغلاق النسخ الأخرى للبرنامج...</str>
+ <str id="lblStepExtractZip">الخطوة 2/5: فك ضغط ملف التحديث...</str>
+ <str id="lblStepReplaceExe">الخطوة 3/5: استبدال الملف التنفيذي القديم...</str>
+ <str id="lblStepDeployBin">الخطوة 4/5: نشر الملفات المحدثة...</str>
+ <str id="lblStepUpdateShortcut">الخطوة 5/5: تحديث اختصار سطح المكتب وإعادة التشغيل...</str>
+ <str id="msgErrExtractZip">فشل فك ضغط ملف التحديث. يرجى التنزيل يدوياً.</str>
+ <str id="msgErrInvalidExtracted">الملف المستخرج غير صالح أو تالف.</str>
+ <str id="msgErrCannotReplaceLocked">لا يمكن استبدال الملف المقفل:\n%1\nأغلق جميع النسخ وحاول مجدداً.</str>
+ <str id="msgErrFailedDeploy">فشل نشر التحديث إلى:\n%1</str>
+ <str id="msgUpdateSuccess">تم تطبيق التحديث بنجاح! جاري إعادة التشغيل...</str>
+ <str id="lblStepTermBg">الخطوة 1/5: إغلاق العمليات في الخلفية...</str>
+ <str id="lblStepCreateInstallDir">الخطوة 2/5: إنشاء مجلد التثبيت: %1</str>
+ <str id="lblStepDeployProgFiles">الخطوة 3/5: نسخ البرنامج إلى Program Files...</str>
+ <str id="lblStepGrantPerms">الخطوة 4/5: منح صلاحيات الملفات بنظام Win32...</str>
+ <str id="lblStepCreateShortcut">الخطوة 5/5: إنشاء اختصار سطح المكتب...</str>
+ <str id="msgSelfInstallSuccess">اكتمل التثبيت بنجاح! جاري تشغيل التطبيق...</str>
+ <checkBox id="chkDeveloperMode">تفعيل وضع المطور (إظهار التفاصيل الفنية والتقرير الشامل)</checkBox>
+
+ <!-- Priority & Exclusion Actions -->
+ <str id="actSetPriority">تحديد أولوية (إضافة لقائمة الاستثناءات)</str>
+ <str id="actRemovePriority">إزالة الأولوية (إزالة من قائمة الاستثناءات)</str>
+ <str id="titleConfirmPriority">تأكيد تحديد الأولوية</str>
+ <str id="msgConfirmPriority">هل أنت تأكد من إضافة '%1' إلى قائمة الأولويات؟</str>
+ <str id="logSetPriority">تم تحديد الأولوية للبرنامج '%1' (إضافته لقائمة الاستثناءات).</str>
+
+ <!-- Simple Log Strings -->
+ <str id="logSimpleTitle">تم تنظيف وتحسين الذاكرة بنجاح!</str>
+ <str id="logSimpleReclaimed">الذاكرة المحررة</str>
+ <str id="logSimpleRamLoad">مستوى استهلاك الذاكرة</str>
+ <str id="logSimpleExecTime">زمن التنفيذ</str>
+ <str id="txtSeconds">ثانية</str>
+
+ <str id="msgErrCopyBin">فشل نسخ الملف إلى %1</str>
 </widgetInfo>

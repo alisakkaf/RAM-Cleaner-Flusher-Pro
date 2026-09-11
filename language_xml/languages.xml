@@ -129,7 +129,8 @@
  <!-- Activity Log Messages -->
  <str id="logAppInit">%1 initialized successfully.</str>
  <str id="logDevInfo">Developer: %1 (%2)</str>
- <str id="logStartingOp">Starting Operation : %1 | Please Wait For OS Kernel Memory.</str>
+ <str id="logStartingOp">Starting Operation: %1</str>
+ <str id="logWaitingSettling">Waiting for memory list response and settling...</str>
  <str id="logOpeningGroupDiag">Opening Group Diagnostics for '%1' (%2 Instances)...</str>
  <str id="logOpeningProcDiag">Opening Process Inspector Diagnostics for '%1' (PID: %2)...</str>
  <str id="logProtected">Protected '%1' by adding to Exclusion List.</str>
@@ -197,4 +198,63 @@
  <str id="prioBelowNormal">Below Normal</str>
  <str id="prioIdle">Idle</str>
  <str id="prioRealtime">Realtime</str>
+
+ <!-- Process Termination Dialogs -->
+ <str id="msgConfirmKillSingle">Are you sure you want to terminate process '%1' (PID: %2)?</str>
+ <str id="msgConfirmKillGroup">Are you sure you want to terminate ALL %1 instances of process group '%2'?</str>
+ <str id="btnYes">Yes</str>
+ <str id="btnNo">No</str>
+ <str id="titleTermError">Termination Error</str>
+ <str id="msgCannotTermSys">Cannot terminate this critical system process.</str>
+
+ <!-- Installer & Updater Dialogs -->
+ <str id="dlgUpdateAvailableTitle">%1 • Software Updater</str>
+ <str id="lblNewReleaseAvail">New Release Available: Version %1</str>
+ <str id="lblCurrentInstalled">Current Installed: %1 | Release Date: %2</str>
+ <str id="btnUpdateAuto">Update Automatically</str>
+ <str id="btnOpenGithub">Open GitHub</str>
+ <str id="btnLater">Later</str>
+ <str id="dlgDownloadingTitle">Downloading Update %1...</str>
+ <str id="lblConnServer">Connecting to update server...</str>
+ <str id="msgDlErrorTitle">Download Error</str>
+ <str id="msgDlErrorFailedTemp">Failed to create temporary file:\n%1</str>
+ <str id="msgDlSuccess">Download completed successfully!</str>
+ <str id="msgDlFailedTitle">Download Failed</str>
+ <str id="msgDlFailedNetErr">Network error occurred while downloading update:\n%1</str>
+ <str id="dlgInstallTitleUpdate">%1 • Applying Update...</str>
+ <str id="dlgInstallTitleSelf">%1 • Self-Installing...</str>
+ <str id="lblInitSetupEnv">Initializing setup environment...</str>
+ <str id="lblStepTermOther">Step 1/5: Terminating other application instances...</str>
+ <str id="lblStepExtractZip">Step 2/5: Extracting update archive...</str>
+ <str id="lblStepReplaceExe">Step 3/5: Replacing old executable...</str>
+ <str id="lblStepDeployBin">Step 4/5: Deploying updated binary...</str>
+ <str id="lblStepUpdateShortcut">Step 5/5: Updating Desktop Shortcut &amp; restarting...</str>
+ <str id="msgErrExtractZip">Failed to extract update archive. Please download manually.</str>
+ <str id="msgErrInvalidExtracted">Extracted file appears invalid or corrupted.</str>
+ <str id="msgErrCannotReplaceLocked">Cannot replace locked file:\n%1\nClose all instances and try again.</str>
+ <str id="msgErrFailedDeploy">Failed to deploy update to:\n%1</str>
+ <str id="msgUpdateSuccess">Update applied successfully! Restarting...</str>
+ <str id="lblStepTermBg">Step 1/5: Terminating background instances...</str>
+ <str id="lblStepCreateInstallDir">Step 2/5: Creating installation folder: %1</str>
+ <str id="lblStepDeployProgFiles">Step 3/5: Deploying executable to Program Files...</str>
+ <str id="lblStepGrantPerms">Step 4/5: Granting Win32 file permissions...</str>
+ <str id="lblStepCreateShortcut">Step 5/5: Creating Desktop Shortcut...</str>
+ <str id="msgSelfInstallSuccess">Installation completed! Launching app...</str>
+ <checkBox id="chkDeveloperMode">Enable Developer Mode (Advanced Technical Logs)</checkBox>
+
+ <!-- Priority & Exclusion Actions -->
+ <str id="actSetPriority">Set Priority (Add to Exclusion List)</str>
+ <str id="actRemovePriority">Remove Priority (Remove from Exclusion List)</str>
+ <str id="titleConfirmPriority">Confirm Set Priority</str>
+ <str id="msgConfirmPriority">Are you sure you want to add '%1' to the Priority List?</str>
+ <str id="logSetPriority">Set priority for '%1' (Added to Exclusion List).</str>
+
+ <!-- Simple Log Strings -->
+ <str id="logSimpleTitle">Memory Optimization Completed!</str>
+ <str id="logSimpleReclaimed">RAM Reclaimed</str>
+ <str id="logSimpleRamLoad">Memory Load</str>
+ <str id="logSimpleExecTime">Execution Time</str>
+ <str id="txtSeconds">sec</str>
+
+ <str id="msgErrCopyBin">Failed to copy binary to %1</str>
 </widgetInfo>

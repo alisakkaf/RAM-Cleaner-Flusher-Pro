@@ -129,8 +129,9 @@
  <!-- Activity Log Messages -->
  <str id="logAppInit">%1 iniciado con éxito.</str>
  <str id="logDevInfo">Desarrollador: %1 (%2)</str>
- <str id="logStartingOp">Iniciando Operación: %1 | Espere la Memoria del Kernel del SO.</str>
- <str id="logOpeningGroupDiag">Abriendo Diagnóstico de Grupo para '%1' (%2 Instancias)...</str>
+ <str id="logStartingOp">Iniciando Operación: %1</str>
+ <str id="logWaitingSettling">Esperando la respuesta y estabilización de la memoria...</str>
+ <str id="logOpeningGroupDiag">Abriendo diagnóstico del grupo '%1' (%2 procesos)...</str>
  <str id="logOpeningProcDiag">Abriendo Diagnóstico de Proceso para '%1' (PID: %2)...</str>
  <str id="logProtected">Protegido '%1' añadiéndolo a la Lista de Exclusión.</str>
  <str id="logTerminatedSingle">Proceso terminado '%1' (PID: %2).</str>
@@ -197,4 +198,63 @@
  <str id="prioBelowNormal">Por Debajo de Normal</str>
  <str id="prioIdle">Inactivo</str>
  <str id="prioRealtime">Tiempo Real</str>
+
+ <!-- Process Termination Dialogs -->
+ <str id="msgConfirmKillSingle">¿Está seguro de que desea terminar el proceso '%1' (PID: %2)?</str>
+ <str id="msgConfirmKillGroup">¿Está seguro de que desea terminar LAS %1 instancias del grupo '%2'?</str>
+ <str id="btnYes">Sí</str>
+ <str id="btnNo">No</str>
+ <str id="titleTermError">Error de Terminación</str>
+ <str id="msgCannotTermSys">No se puede terminar este proceso crítico del sistema.</str>
+
+ <!-- Installer & Updater Dialogs -->
+ <str id="dlgUpdateAvailableTitle">%1 • Actualizador de Software</str>
+ <str id="lblNewReleaseAvail">Nueva versión disponible: Versión %1</str>
+ <str id="lblCurrentInstalled">Instalado actualmente: %1 | Fecha: %2</str>
+ <str id="btnUpdateAuto">Actualizar Automáticamente</str>
+ <str id="btnOpenGithub">Abrir GitHub</str>
+ <str id="btnLater">Más tarde</str>
+ <str id="dlgDownloadingTitle">Descargando actualización %1...</str>
+ <str id="lblConnServer">Conectando al servidor de actualizaciones...</str>
+ <str id="msgDlErrorTitle">Error de Descarga</str>
+ <str id="msgDlErrorFailedTemp">Error al crear el archivo temporal:\n%1</str>
+ <str id="msgDlSuccess">¡Descarga completada con éxito!</str>
+ <str id="msgDlFailedTitle">Descarga Fallida</str>
+ <str id="msgDlFailedNetErr">Ocurrió un error de red durante la descarga:\n%1</str>
+ <str id="dlgInstallTitleUpdate">%1 • Aplicando Actualización...</str>
+ <str id="dlgInstallTitleSelf">%1 • Auto-Instalación...</str>
+ <str id="lblInitSetupEnv">Inicializando entorno de instalación...</str>
+ <str id="lblStepTermOther">Paso 1/5: Terminando otras instancias de la aplicación...</str>
+ <str id="lblStepExtractZip">Paso 2/5: Extrayendo archivo de actualización...</str>
+ <str id="lblStepReplaceExe">Paso 3/5: Reemplazando ejecutable anterior...</str>
+ <str id="lblStepDeployBin">Paso 4/5: Desplegando binario actualizado...</str>
+ <str id="lblStepUpdateShortcut">Paso 5/5: Actualizando acceso directo y reiniciando...</str>
+ <str id="msgErrExtractZip">Error al extraer actualización. Por favor descargue manualmente.</str>
+ <str id="msgErrInvalidExtracted">El archivo extraído parece no válido o dañado.</str>
+ <str id="msgErrCannotReplaceLocked">No se puede reemplazar archivo bloqueado:\n%1\nCierre todas las instancias e intente de nuevo.</str>
+ <str id="msgErrFailedDeploy">Error al desplegar actualización en:\n%1</str>
+ <str id="msgUpdateSuccess">¡Actualización aplicada con éxito! Reiniciando...</str>
+ <str id="lblStepTermBg">Paso 1/5: Terminando instancias en segundo plano...</str>
+ <str id="lblStepCreateInstallDir">Paso 2/5: Creando carpeta de instalación: %1</str>
+ <str id="lblStepDeployProgFiles">Paso 3/5: Desplegando ejecutable en Program Files...</str>
+ <str id="lblStepGrantPerms">Paso 4/5: Otorgando permisos Win32...</str>
+ <str id="lblStepCreateShortcut">Paso 5/5: Creando acceso directo en escritorio...</str>
+ <str id="msgSelfInstallSuccess">¡Instalación completada! Iniciando aplicación...</str>
+ <checkBox id="chkDeveloperMode">Habilitar Modo Desarrollador (Registros Técnicos Avanzados)</checkBox>
+
+ <!-- Priority & Exclusion Actions -->
+ <str id="actSetPriority">Establecer Prioridad (Añadir a Lista de Exclusión)</str>
+ <str id="actRemovePriority">Quitar Prioridad (Eliminar de Lista de Exclusión)</str>
+ <str id="titleConfirmPriority">Confirmar Prioridad</str>
+ <str id="msgConfirmPriority">¿Está seguro de añadir '%1' a la lista de prioridad?</str>
+ <str id="logSetPriority">Prioridad establecida para '%1' (Añadido a lista de exclusión).</str>
+
+ <!-- Simple Log Strings -->
+ <str id="logSimpleTitle">¡Optimización de Memoria Completada!</str>
+ <str id="logSimpleReclaimed">Memoria Liberada</str>
+ <str id="logSimpleRamLoad">Carga de Memoria</str>
+ <str id="logSimpleExecTime">Tiempo de Ejecución</str>
+ <str id="txtSeconds">seg</str>
+
+ <str id="msgErrCopyBin">Error al copiar binario a %1</str>
 </widgetInfo>
