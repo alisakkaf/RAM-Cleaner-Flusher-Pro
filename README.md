@@ -32,6 +32,12 @@
 > [!IMPORTANT]
 > **Usage & Attribution Policy:** Attribution to the original author ([AliSakkaf](https://www.facebook.com/AliSakkaf.Dev/)) must be provided, along with a link to the license and an indication if modifications were made. Permitted strictly for personal and educational use; commercial or financial exploitation is strictly prohibited.
 
+> [!WARNING]
+> **🛡️ Antivirus False Positive Notice & Transparency:**  
+> This application is **100% clean, safe, and open-source**. Because it directly invokes native Windows NT kernel APIs (`NtSetSystemInformation` and working set flushes) and requires elevated administrative privileges to flush system-wide standby cache, some aggressive antivirus machine learning (ML) heuristics may mistakenly flag unsigned binaries (e.g., *Wacatac.B!ml* or *Variant.Babar*).  
+> All source code is completely public and inspectable right here on GitHub. You can also verify the binary analysis on the live [VirusTotal Report](https://www.virustotal.com/gui/file/70e2d3cc5710fecc3fd9a53ec4f2d732cdd730302c38221b65e05c07ab6d0685?nocache=1).  
+> **Recommendation:** If Windows Defender or your antivirus flags the executable during initial launch or during an auto-update, simply add the application folder or executable to your antivirus **Exclusion / Whitelist**.
+
 ---
 
 ## 📌 Table of Contents
@@ -260,6 +266,7 @@ The App Launch Booster pre-purges memory and elevates execution priority before 
 
 ### 5. Settings & Automation Tab
 The Settings tab governs background rules, autostart, and visual theme preferences:
+* **`Developer Mode` Checkbox:** Toggles between standard user-friendly HTML card summary logs and exhaustive Win32 kernel execution diagnostics in real time without restarting.
 * **`Auto Threshold Cleaning` Checkbox & Slider:** Triggers background optimization when physical RAM load exceeds percentage (50% to 98%, default 80%).
 * **`Periodic Timer Cleaning` Checkbox & Spinbox:** Schedules background optimization timer routines (5 minutes to 1440 minutes / 24 hours).
 * **`Start with Windows` Checkbox:** Writes registry autostart key (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run\RAMCleanerPro`).
@@ -269,7 +276,7 @@ The Settings tab governs background rules, autostart, and visual theme preferenc
 
 ### 6. About & Updates Tab
 Displays application identity, metadata, links, and updater controls:
-* **Application Identity:** Displaying version `v1.0.0`, author `AliSakkaf`, copyright, and license info.
+* **Application Identity:** Displaying version `v1.2.0`, author `AliSakkaf`, copyright, and license info.
 * **Official Web Links:** Quick links to Website (`alisakkaf.com`), GitHub (`github.com/alisakkaf`), and Facebook (`facebook.com/AliSakkaf.Dev`).
 * **`Check for Updates` Button:** Triggers manual update check against raw Gist update endpoints.
 
@@ -360,8 +367,8 @@ Displays application identity, metadata, links, and updater controls:
 ### 10. Win32 Self-Installer & Desktop Shortcut Manager
 * **First-Run Self-Installation (`InstallerManager`):** If executed from Downloads or temporary folders, automatically installs itself to `%ProgramFiles%\RAM Cleaner & Flusher Pro\RAM_Cleaner_Pro.exe`.
 * **Win32 COM Desktop Shortcut Generation:** Creates `RAM Cleaner & Flusher Pro.lnk` on user desktop via Win32 COM interfaces (`IShellLinkW` / `IPersistFile`).
-* **Process Taskkill Cleanup:** Kills any lingering background instances (`taskkill /F /IM RAM_Cleaner_Pro.exe`) before replacing binary files.
-* **Win32 File Permission Elevation:** Applies full access ACL permissions via `icacls Administrators:F Users:F`.
+* **Native Process Termination Cleanup:** Gracefully terminates lingering background instances via native Win32 Toolhelp snapshot APIs (`CreateToolhelp32Snapshot` / `TerminateProcess`) before replacing binary files.
+* **Native Win32 File Permission Management:** Configures proper file access permissions natively via `QFile::setPermissions()` without external command scripts.
 * **Frameless Installation Progress Dialog (`InstallProgressDialog`):** 5-step status reporting window.
 
 ---
@@ -486,7 +493,8 @@ mingw32-make -j8
 
 - [x] **v1.0.0:** Initial Enterprise Release with NtSetSystemInformation engine, Windows 11 Fluent 2.0 UI, Svchost Service Resolver, Self-Installer, and Silent Auto-Updater.
 - [x] **v1.1.0:** Dynamic Multi-Language XML Localization Engine (`languages.xml`, `languages_ar.xml`, `languages_es.xml`), Real-Time Font & Typography Customization (Zero-Restart Instant QSS Application), Full RTL Support for Arabic, Interactive Context Menus (`⋮`), and Process Group Diagnostics.
-- [ ] **v1.2.0:** Taskbar Mini-Overlay Widget showing real-time physical RAM usage percentage on Windows Taskbar.
+- [x] **v1.2.0:** Developer Mode (Dual-view logging), 10-Second Settling Observation Phase with live sampling and minimum RAM tracking, Priority Exclusion List context actions, Clean Extension-less process tree display, and Bulletproof BiDi HTML formatting.
+- [ ] **v1.3.0:** Taskbar Mini-Overlay Widget showing real-time physical RAM usage percentage on Windows Taskbar.
 - [ ] **v2.0.0:** Kernel-level RAM Disk creation tool and game profile auto-detection.
 
 ---
@@ -505,26 +513,8 @@ Thank you to all the amazing contributors who help improve RAM Cleaner & Flusher
 
 ## 💡 Support the Developer
 
-<div align="center">
-  <i>If you find my tools and projects useful, consider supporting my work. Your support helps keep these projects completely free!</i>
-</div>
-
-<br>
-
-<div align="center">
-
-| Crypto Asset | Network | Wallet Address (Copy) | Quick Scan |
-| :--- | :--- | :--- | :---: |
-| ![USDT](https://img.shields.io/badge/USDT-Tether-26A17B?style=for-the-badge&logo=tether&logoColor=white) | **TRC20** | `TYLBeDA5aGNcc3WkVqf3xWPHXmsZzs2p28` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=TYLBeDA5aGNcc3WkVqf3xWPHXmsZzs2p28" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![USDT](https://img.shields.io/badge/USDT-Tether-26A17B?style=for-the-badge&logo=tether&logoColor=white) | **BEP20** | `0x67cf27f33c80479ea96372810f9e2ee4c3b095c5` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=0x67cf27f33c80479ea96372810f9e2ee4c3b095c5" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![BTC](https://img.shields.io/badge/BTC-Bitcoin-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white) | **Bitcoin** | `bc1q97dr37h37npzarmmrv0tjz2nm50htqc7pfpzj6` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=bitcoin:bc1q97dr37h37npzarmmrv0tjz2nm50htqc7pfpzj6" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![ETH](https://img.shields.io/badge/ETH-Ethereum-3C3C3D?style=for-the-badge&logo=ethereum&logoColor=white) | **ERC20** | `0x67cf27f33c80479ea96372810F9e2EE4C3b095C5` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=ethereum:0x67cf27f33c80479ea96372810F9e2EE4C3b095C5" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![SOL](https://img.shields.io/badge/SOL-Solana-9945FF?style=for-the-badge&logo=solana&logoColor=white) | **Solana** | `Cbesgr4tvo4T1inNMFe46GSym2qMYjkmofbXFc77rDNK` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=solana:Cbesgr4tvo4T1inNMFe46GSym2qMYjkmofbXFc77rDNK" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![USDC](https://img.shields.io/badge/USDC-USD_Coin-2775CA?style=for-the-badge&logo=usd-coin&logoColor=white) | **ERC20** | `0x67cf27f33c80479ea96372810f9e2ee4c3b095c5` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=0x67cf27f33c80479ea96372810f9e2ee4c3b095c5" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![USDC](https://img.shields.io/badge/USDC-USD_Coin-2775CA?style=for-the-badge&logo=usd-coin&logoColor=white) | **SPL** | `Cbesgr4tvo4T1inNMFe46GSym2qMYjkmofbXFc77rDNK` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=solana:Cbesgr4tvo4T1inNMFe46GSym2qMYjkmofbXFc77rDNK" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![USDC](https://img.shields.io/badge/USDC-USD_Coin-2775CA?style=for-the-badge&logo=usd-coin&logoColor=white) | **BEP20** | `0x67cf27f33c80479ea96372810F9e2EE4C3b095C5` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=0x67cf27f33c80479ea96372810F9e2EE4C3b095C5" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-
-</div>
+<!-- DONATE_SECTION:START -->
+<!-- DONATE_SECTION:END -->
 
 ---
 

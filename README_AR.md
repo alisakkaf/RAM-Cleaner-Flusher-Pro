@@ -33,6 +33,12 @@
 
 > 🚨 **سياسة الاستخدام والحقوق:** يجب الإشارة إلى اسم المؤلف الأصلي ([AliSakkaf](https://www.facebook.com/AliSakkaf.Dev/))، وتوفير رابط للترخيص، وبيان ما إذا كانت هناك تعديلات. يُسمح باستخدام العمل لأغراض شخصية أو تعليمية فقط، ويُمنع استخدامه بغرض تحقيق أي مكاسب مالية أو تجارية.
 
+> [!WARNING]
+> **🛡️ تنويه شفاف وهام حول مكافحات الفيروسات (False Positive):**  
+> البرنامج **نظيف وآمن 100% ومفتوح المصدر بالكامل**. نظراً لأن الأداة تتعامل مباشرة مع دوال نواة ويندوز العميقة (Native NT Kernel APIs مثل `NtSetSystemInformation` وتفريغ مساحات العمل للعمليات) وتتطلب صلاحيات الإدارة العليا لتفريغ ذاكرة الكاش للنظام ككل، فإن بعض خوارزميات الذكاء الاصطناعي (ML Heuristics) في مكافحات الفيروسات قد تظهره كإنذار خاطئ (False Positive) لكونه تطبيقاً مفتوح المصدر غير موقع بشهادة رقمية تجارية مدفوعة.  
+> كود البرنامج متاح بالكامل هنا على GitHub للتدقيق والمعاينة البرمجية، كما يمكنك فحص البيناري والتحقق من النتيجة النظيفة عبر [تقرير VirusTotal المباشر](https://www.virustotal.com/gui/file/70e2d3cc5710fecc3fd9a53ec4f2d732cdd730302c38221b65e05c07ab6d0685?nocache=1).  
+> **نصيحة للمستخدمين:** في حال اعترض مكافح الفيروسات أو Windows Defender تشغيل التطبيق أو أثناء التحديث التلقائي، يمكنك ببساطة إضافة مجلد البرنامج أو الملف التنفيذي إلى **قائمة الاستثناءات (Exclusion / Whitelist)** في المكافح ليعمل بسلاسة وأمان تام.
+
 </div>
 
 ---
@@ -261,6 +267,7 @@
 
 ### 5. لوحة الإعدادات والأتمتة (Settings Tab)
 تتيح ضبط قواعد التنظيف في الخلفية والتثبيت بالسجل والنوافذ العائمة والثيمات:
+* **خيار وضع المطور (`chkDeveloperMode`):** التبديل اللحظي بين التقرير البطاقي البسيط الجذاب وتفاصيل التقرير الشامل الفني لنواة Win32 دون الحاجة لإعادة تشغيل البرنامج.
 * **تعديل النسبة الحدية (`chkAutoThreshold` Slider):** تحديد نسبة حدية (50% إلى 98%، افتراضياً 80%). عند تجاوز الرام للنسبة، يشتغل التنظيف تلقائياً.
 * **المؤقت الزمني المنتظم (`chkTimerClean` Spinbox):** تحديد مؤقت زمني (5 دقائق إلى 1440 دقيقة / 24 ساعة).
 * **التشغيل التلقائي مع الويندوز (`chkStartWithWindows`):** كتابة مفتاح السجل (`HKCU\Software\Microsoft\Windows\CurrentVersion\Run\RAMCleanerPro`).
@@ -270,7 +277,7 @@
 
 ### 6. لوحة معلومات البرنامج والتحديثات (About & Updates Tab)
 تعرض معلومات الإصدار والروابط ومحرك التحديثات:
-* **معلومات البرنامج:** رقم الإصدار `v1.0.0` وحقوق المطور **AliSakkaf**.
+* **معلومات البرنامج:** رقم الإصدار `v1.2.0` وحقوق المطور **AliSakkaf**.
 * **الروابط الرسمية:** روابط الموقع الرسمي (`alisakkaf.com`) وحساب GitHub و صفحة الفيس بوك.
 * **زر `Check for Updates`:** إجراء فحص يدوي للتحديثات عبر سيرفر Gist JSON.
 
@@ -447,7 +454,8 @@ mingw32-make -j8
 
 - [x] **v1.0.0:** الإصدار الرئيسي الأول مع محرك NtSetSystemInformation، واجهة ويندوز 11 الفاخرة، تفكيك خدمات svchost، التثبيت الذاتي والتحديث الصامت.
 - [x] **v1.1.0:** محرك الترجمة الديناميكية لجميع لغات العالم عبر ملفات XML (`languages.xml`, `languages_ar.xml`, `languages_es.xml`)، محرك التخصيص الفوري للخطوط والحجم بدون إعادة تشغيل، الدعم الكامل لاتجاه اليمين لليسار (RTL)، والقوائم المنبثقة التفاعلية (`⋮`).
-- [ ] **v1.2.0:** أداة مصغرة على شريط المهام (Taskbar Widget) لعرض نسبة استهلاك الرام في الوقت الفعلي.
+- [x] **v1.2.0:** خيار وضع المطور (Developer Mode)، فترة الاستقرار لمدة 10 ثوانٍ مع البث الحي للنقاط وتتبع أقل استهلاك للذاكرة، قائمة الأولويات (Priority List)، عرض العمليات بدون امتداد exe، والتنسيق الدقيق ثنائي الاتجاه (BiDi).
+- [ ] **v1.3.0:** أداة مصغرة على شريط المهام (Taskbar Widget) لعرض نسبة استهلاك الرام في الوقت الفعلي.
 - [ ] **v2.0.0:** أداة إنشاء أقراص الرام المباشرة (RAM Disk Manager) وملفات التنسيق التلقائي للألعاب.
 
 ---
@@ -474,20 +482,8 @@ mingw32-make -j8
 
 <br>
 
-<div align="center">
-
-| Crypto Asset | Network | Wallet Address (Copy) | Quick Scan |
-| :--- | :--- | :--- | :---: |
-| ![USDT](https://img.shields.io/badge/USDT-Tether-26A17B?style=for-the-badge&logo=tether&logoColor=white) | **TRC20** | `TYLBeDA5aGNcc3WkVqf3xWPHXmsZzs2p28` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=TYLBeDA5aGNcc3WkVqf3xWPHXmsZzs2p28" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![USDT](https://img.shields.io/badge/USDT-Tether-26A17B?style=for-the-badge&logo=tether&logoColor=white) | **BEP20** | `0x67cf27f33c80479ea96372810f9e2ee4c3b095c5` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=0x67cf27f33c80479ea96372810f9e2ee4c3b095c5" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![BTC](https://img.shields.io/badge/BTC-Bitcoin-F7931A?style=for-the-badge&logo=bitcoin&logoColor=white) | **Bitcoin** | `bc1q97dr37h37npzarmmrv0tjz2nm50htqc7pfpzj6` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=bitcoin:bc1q97dr37h37npzarmmrv0tjz2nm50htqc7pfpzj6" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![ETH](https://img.shields.io/badge/ETH-Ethereum-3C3C3D?style=for-the-badge&logo=ethereum&logoColor=white) | **ERC20** | `0x67cf27f33c80479ea96372810F9e2EE4C3b095C5` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=ethereum:0x67cf27f33c80479ea96372810F9e2EE4C3b095C5" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![SOL](https://img.shields.io/badge/SOL-Solana-9945FF?style=for-the-badge&logo=solana&logoColor=white) | **Solana** | `Cbesgr4tvo4T1inNMFe46GSym2qMYjkmofbXFc77rDNK` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=solana:Cbesgr4tvo4T1inNMFe46GSym2qMYjkmofbXFc77rDNK" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![USDC](https://img.shields.io/badge/USDC-USD_Coin-2775CA?style=for-the-badge&logo=usd-coin&logoColor=white) | **ERC20** | `0x67cf27f33c80479ea96372810f9e2ee4c3b095c5` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=0x67cf27f33c80479ea96372810f9e2ee4c3b095c5" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![USDC](https://img.shields.io/badge/USDC-USD_Coin-2775CA?style=for-the-badge&logo=usd-coin&logoColor=white) | **SPL** | `Cbesgr4tvo4T1inNMFe46GSym2qMYjkmofbXFc77rDNK` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=solana:Cbesgr4tvo4T1inNMFe46GSym2qMYjkmofbXFc77rDNK" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-| ![USDC](https://img.shields.io/badge/USDC-USD_Coin-2775CA?style=for-the-badge&logo=usd-coin&logoColor=white) | **BEP20** | `0x67cf27f33c80479ea96372810F9e2EE4C3b095C5` | <a href="https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=10&data=0x67cf27f33c80479ea96372810F9e2EE4C3b095C5" target="_blank"><img src="https://img.shields.io/badge/Show_QR-Click_Here-black?style=flat-square&logo=qr-code" alt="QR"></a> |
-
-</div>
+<!-- DONATE_SECTION:START -->
+<!-- DONATE_SECTION:END -->
 
 ---
 
