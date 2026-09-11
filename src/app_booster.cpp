@@ -30,7 +30,7 @@ bool AppBooster::boostAndLaunch(const QString &appExecutablePath,
     STARTUPINFOW si = { sizeof(STARTUPINFOW) };
     PROCESS_INFORMATION pi = { 0 };
 
-    DWORD dwCreationFlags = CREATE_NEW_CONSOLE | NORMAL_PRIORITY_CLASS;
+    DWORD dwCreationFlags = NORMAL_PRIORITY_CLASS;
 
     switch (priority) {
         case AboveNormalPriority:
