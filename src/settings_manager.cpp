@@ -109,6 +109,15 @@ void SettingsManager::setStartMinimized(bool enabled) {
     saveSettings();
 }
 
+bool SettingsManager::isDeveloperMode() const {
+    return m_settings->value("General/DeveloperMode", false).toBool();
+}
+
+void SettingsManager::setDeveloperMode(bool enabled) {
+    m_settings->setValue("General/DeveloperMode", enabled);
+    saveSettings();
+}
+
 bool SettingsManager::isDarkTheme() const {
     return m_settings->value("Appearance/DarkTheme", true).toBool();
 }
