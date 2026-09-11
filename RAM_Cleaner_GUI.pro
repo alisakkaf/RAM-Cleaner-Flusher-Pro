@@ -17,28 +17,24 @@ TARGET = RAM_Cleaner_Pro
 TEMPLATE = app
 
 
-VERSION  = 1.1.0
+VERSION  = 1.2.0
 DEFINES += QT_DEPRECATED_WARNINGS
 
-# ----- Release size optimization flags -----
-QMAKE_CXXFLAGS_RELEASE -= -O2
-QMAKE_CFLAGS_RELEASE   -= -O2
-QMAKE_CXXFLAGS_RELEASE += -Os -ffunction-sections -fdata-sections -fmerge-all-constants -fno-stack-protector
-QMAKE_CFLAGS_RELEASE   += -Os -ffunction-sections -fdata-sections -fmerge-all-constants -fno-stack-protector
-QMAKE_LFLAGS_RELEASE   += -Wl,--gc-sections -s -Wl,--exclude-libs,ALL -Wl,--build-id=none
+# ----- Release optimization flags (Safe & Standard) -----
+QMAKE_CXXFLAGS_RELEASE += -O2 -ffunction-sections -fdata-sections
+QMAKE_CFLAGS_RELEASE   += -O2 -ffunction-sections -fdata-sections
+QMAKE_LFLAGS_RELEASE   += -Wl,--gc-sections -Wl,--dynamicbase -Wl,--nxcompat
 
-# Embedding Windows Resource File & Static Linking
+# Embedding Windows Resource File & Manifest
 win32 {
     RC_FILE = app.rc
+    MANIFEST += app.manifest
 
     # Windows API System Libraries
-    LIBS += -lpsapi -ladvapi32 -luser32 -lshell32 -lole32
+    LIBS += -lpsapi -ladvapi32 -luser32 -lshell32 -lole32 -loleaut32 -ldwmapi -lgdi32 -luuid
 
     QMAKE_LFLAGS_RELEASE += -static -static-libgcc -static-libstdc++
     QMAKE_LFLAGS_DEBUG   += -static -static-libgcc -static-libstdc++
-
-    # Maximum QRC Compression (zlib level 9)
-    QMAKE_RESOURCE_FLAGS += -compress 9 -threshold 0
 }
 
 
