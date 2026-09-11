@@ -35,7 +35,7 @@
 > [!WARNING]
 > **🛡️ Antivirus False Positive Notice & Transparency:**  
 > This application is **100% clean, safe, and open-source**. Because it directly invokes native Windows NT kernel APIs (`NtSetSystemInformation` and working set flushes) and requires elevated administrative privileges to flush system-wide standby cache, some aggressive antivirus machine learning (ML) heuristics may mistakenly flag unsigned binaries (e.g., *Wacatac.B!ml* or *Variant.Babar*).  
-> All source code is completely public and inspectable right here on GitHub. You can also verify the binary analysis on the live [VirusTotal Report](https://www.virustotal.com/gui/file/70e2d3cc5710fecc3fd9a53ec4f2d732cdd730302c38221b65e05c07ab6d0685?nocache=1).  
+> All source code is completely public and inspectable right here on GitHub. You can also verify the binary analysis on the live [VirusTotal Report](https://www.virustotal.com/gui/file/be462add0dac5991dab69cdc16dd0241c865311bd9cc3ebf9e2afaebc7140ea7?nocache=1).  
 > **Recommendation:** If Windows Defender or your antivirus flags the executable during initial launch or during an auto-update, simply add the application folder or executable to your antivirus **Exclusion / Whitelist**.
 
 ---
