@@ -43,6 +43,9 @@ public:
     bool isStartMinimized() const;
     void setStartMinimized(bool enabled);
 
+    bool isDeveloperMode() const;
+    void setDeveloperMode(bool enabled);
+
     bool isDarkTheme() const;
     void setDarkTheme(bool isDark);
 
