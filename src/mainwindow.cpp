@@ -344,8 +344,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->treeProcesses->setIconSize(QSize(22, 22));
     ui->treeProcesses->setAnimated(true);
     ui->treeProcesses->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->treeProcesses, &QTreeWidget::customContextMenuRequested, this, &MainWindow::on_treeProcesses_customContextMenuRequested);
-    connect(ui->treeProcesses, &QTreeWidget::itemDoubleClicked, this, &MainWindow::on_treeProcesses_itemDoubleClicked);
+    // Note: on_treeProcesses_customContextMenuRequested and on_treeProcesses_itemDoubleClicked
+    // are automatically connected by Qt's QMetaObject::connectSlotsByName(this) during setupUi(this).
 
     // Header Column Setup (Interactive resizing for all columns, zero right whitespace gap)
     ui->treeProcesses->headerItem()->setText(0, "Process Name");
@@ -510,9 +510,6 @@ void MainWindow::changeLanguage(const QString &langCode) {
     ui->spinThreshold->setLayoutDirection(dir);
     ui->spinThreshold->setAlignment(align);
 
-    // ui->spinInterval->setLayoutDirection(dir);
-    // ui->spinInterval->setAlignment(align);
-
     ui->spinFontSize->setLayoutDirection(dir);
     ui->spinFontSize->setAlignment(align);
 
@@ -642,6 +639,7 @@ void MainWindow::loadSettingsToUI() {
     ui->chkStartWithWindows->setChecked(m_settings.isStartWithWindows());
     ui->chkMinimizeToTray->setChecked(m_settings.isMinimizeToTray());
     ui->chkStartMinimized->setChecked(m_settings.isStartMinimized());
+    ui->chkDeveloperMode->setChecked(m_settings.isDeveloperMode());
 
     ui->txtBoostAppPath->setText(m_settings.getBoostAppPath());
     ui->comboPriority->setCurrentIndex(m_settings.getBoostPriority());
@@ -680,10 +678,11 @@ void MainWindow::loadSettingsToUI() {
 
     applyCustomFont();
 
-    // Load exclusions with real icons
+    // Load exclusions with real icons and clean stripped names
     ui->listExclusions->clear();
     for (const QString &proc : m_settings.getExclusionList()) {
-        QListWidgetItem *item = new QListWidgetItem(IconProvider::getProcessIcon(0, proc), proc);
+        QListWidgetItem *item = new QListWidgetItem(IconProvider::getProcessIcon(0, proc), stripExeExtension(proc));
+        item->setData(Qt::UserRole, proc);
         ui->listExclusions->addItem(item);
     }
 }
@@ -720,6 +719,35 @@ void MainWindow::setupSystemTray() {
     m_trayIcon->show();
 }
 
+QString MainWindow::formatRamSizeMB(double mb) {
+    if (mb <= 0.0) return "0 MB";
+    if (mb >= 1024.0) {
+        return formatRamSizeGB(mb / 1024.0);
+    }
+    double rounded = qRound(mb * 10.0) / 10.0;
+    if (qFuzzyCompare(rounded, static_cast<double>(static_cast<long long>(rounded)))) {
+        return QString("%1 MB").arg(static_cast<long long>(rounded));
+    }
+    return QString("%1 MB").arg(rounded, 0, 'f', 1);
+}
+
+QString MainWindow::formatRamSizeGB(double gb) {
+    if (gb <= 0.0) return "0 GB";
+    double rounded = qRound(gb * 10.0) / 10.0;
+    if (qFuzzyCompare(rounded, static_cast<double>(static_cast<long long>(rounded)))) {
+        return QString("%1 GB").arg(static_cast<long long>(rounded));
+    }
+    return QString("%1 GB").arg(rounded, 0, 'f', 1);
+}
+
+QString MainWindow::stripExeExtension(const QString &procName) {
+    QString clean = procName.trimmed();
+    if (clean.endsWith(".exe", Qt::CaseInsensitive)) {
+        clean.chop(4);
+    }
+    return clean;
+}
+
 void MainWindow::updateMemoryStatusUI() {
     if (m_isOptimizing) return; // Do not interrupt background optimization thread updates
 
@@ -737,12 +765,12 @@ void MainWindow::updateMemoryStatusUI() {
     }
 
     ui->lblUsedFreeVal->setText(QString(m_tmplUsedFree)
-                                    .arg(metrics.usedPhysGB, 0, 'f', 2)
-                                    .arg(metrics.availPhysGB, 0, 'f', 2)
-                                    .arg(metrics.totalPhysGB, 0, 'f', 2));
+                                    .arg(formatRamSizeGB(metrics.usedPhysGB))
+                                    .arg(formatRamSizeGB(metrics.availPhysGB))
+                                    .arg(formatRamSizeGB(metrics.totalPhysGB)));
 
     ui->lblStandbyVal->setText(QString(m_tmplStandby)
-                                   .arg(metrics.standbyCacheGB, 0, 'f', 2));
+                                   .arg(formatRamSizeGB(metrics.standbyCacheGB)));
 }
 
 void MainWindow::refreshProcessTree() {
@@ -776,7 +804,6 @@ void MainWindow::refreshProcessTree() {
                 wsBytes = pmc.WorkingSetSize;
             }
             wchar_t pathBuf[MAX_PATH] = { 0 };
-            DWORD sz = MAX_PATH;
             if (GetModuleFileNameExW(hProc, NULL, pathBuf, MAX_PATH) > 0) {
                 fullPath = QString::fromWCharArray(pathBuf);
             }
@@ -803,8 +830,9 @@ void MainWindow::refreshProcessTree() {
         const QList<ProcessInstanceInfo> &instances = it.value();
         if (instances.isEmpty()) continue;
 
-        QString displayName = instances.first().procName;
-        QIcon procIcon = IconProvider::getProcessIcon(instances.first().pid, displayName);
+        QString rawProcName = instances.first().procName;
+        QString displayName = stripExeExtension(rawProcName);
+        QIcon procIcon = IconProvider::getProcessIcon(instances.first().pid, rawProcName);
 
         if (instances.size() == 1) {
             // Single Instance Process Row
@@ -812,12 +840,12 @@ void MainWindow::refreshProcessTree() {
 
             // Check Win32 Service Name
             QString serviceDesc = IconProvider::getProcessServiceDescription(inst.pid);
-            QString procTitle = serviceDesc.isEmpty() ? inst.procName : QString("%1 [%2]").arg(inst.procName).arg(serviceDesc);
+            QString procTitle = serviceDesc.isEmpty() ? displayName : QString("%1 [%2]").arg(displayName).arg(serviceDesc);
 
             QStringList colTexts;
             colTexts << procTitle
                      << QString::number(inst.pid)
-                     << QString("%1 MB").arg(inst.wsMB, 0, 'f', 2)
+                     << formatRamSizeMB(inst.wsMB)
                      << "";
 
             ProcessTreeWidgetItem *item = new ProcessTreeWidgetItem(ui->treeProcesses, colTexts);
@@ -825,8 +853,8 @@ void MainWindow::refreshProcessTree() {
             item->setSortValue(1, static_cast<double>(inst.pid));
             item->setSortValue(2, static_cast<double>(inst.wsBytes));
 
-            QString tooltip = QString("Process: %1\nPID: %2\nRAM: %3 MB\nService: %4\nPath: %5")
-                                  .arg(inst.procName).arg(inst.pid).arg(inst.wsMB, 0, 'f', 2).arg(serviceDesc.isEmpty() ? "N/A" : serviceDesc).arg(inst.fullPath.isEmpty() ? "N/A" : inst.fullPath);
+            QString tooltip = QString("Process: %1\nPID: %2\nRAM: %3\nService: %4\nPath: %5")
+                                  .arg(inst.procName).arg(inst.pid).arg(formatRamSizeMB(inst.wsMB)).arg(serviceDesc.isEmpty() ? "N/A" : serviceDesc).arg(inst.fullPath.isEmpty() ? "N/A" : inst.fullPath);
             item->setToolTip(0, tooltip);
             item->setToolTip(1, tooltip);
             item->setToolTip(2, tooltip);
@@ -834,7 +862,7 @@ void MainWindow::refreshProcessTree() {
             // Column 3: Styled Action Box Button (⋮)
             QPushButton *btnOptions = new QPushButton("⋮");
             btnOptions->setObjectName("btnRowAction");
-            btnOptions->setToolTip("Process Options (Protect, Kill, File Location, Diagnostics)");
+            btnOptions->setToolTip("Process Options (Priority, Kill, File Location, Diagnostics)");
             btnOptions->setFixedSize(36, 22);
             btnOptions->setProperty("procName", inst.procName);
             btnOptions->setProperty("pid", static_cast<qulonglong>(inst.pid));
@@ -858,7 +886,7 @@ void MainWindow::refreshProcessTree() {
             QStringList colTexts;
             colTexts << parentTitle
                      << trXml("treeInstancesText", "%1 Instances").arg(instances.size())
-                     << QString("%1 MB").arg(totalWsMB, 0, 'f', 2)
+                     << formatRamSizeMB(totalWsMB)
                      << "";
 
             ProcessTreeWidgetItem *parentItem = new ProcessTreeWidgetItem(ui->treeProcesses, colTexts);
@@ -866,8 +894,8 @@ void MainWindow::refreshProcessTree() {
             parentItem->setSortValue(1, static_cast<double>(instances.size()));
             parentItem->setSortValue(2, static_cast<double>(totalWsBytes));
 
-            QString parentTooltip = QString("Process Group: %1\nTotal Instances: %2\nTotal Combined RAM: %3 MB")
-                                        .arg(displayName).arg(instances.size()).arg(totalWsMB, 0, 'f', 2);
+            QString parentTooltip = QString("Process Group: %1\nTotal Instances: %2\nTotal Combined RAM: %3")
+                                        .arg(displayName).arg(instances.size()).arg(formatRamSizeMB(totalWsMB));
             parentItem->setToolTip(0, parentTooltip);
             parentItem->setToolTip(1, parentTooltip);
             parentItem->setToolTip(2, parentTooltip);
@@ -877,7 +905,7 @@ void MainWindow::refreshProcessTree() {
             btnGroupOptions->setObjectName("btnRowAction");
             btnGroupOptions->setToolTip("Group Options");
             btnGroupOptions->setFixedSize(36, 22);
-            btnGroupOptions->setProperty("procName", displayName);
+            btnGroupOptions->setProperty("procName", rawProcName);
             btnGroupOptions->setProperty("fullPath", instances.first().fullPath);
             btnGroupOptions->setProperty("isGroup", true);
 
@@ -892,12 +920,12 @@ void MainWindow::refreshProcessTree() {
             // Add Child Nodes for Each Process Instance
             for (const auto &inst : instances) {
                 QString serviceDesc = IconProvider::getProcessServiceDescription(inst.pid);
-                QString childTitle = serviceDesc.isEmpty() ? inst.procName : QString("%1 [%2]").arg(inst.procName).arg(serviceDesc);
+                QString childTitle = serviceDesc.isEmpty() ? displayName : QString("%1 [%2]").arg(displayName).arg(serviceDesc);
 
                 QStringList childTexts;
                 childTexts << childTitle
                            << QString::number(inst.pid)
-                           << QString("%1 MB").arg(inst.wsMB, 0, 'f', 2)
+                           << formatRamSizeMB(inst.wsMB)
                            << "";
 
                 ProcessTreeWidgetItem *childItem = new ProcessTreeWidgetItem(parentItem, childTexts);
@@ -905,8 +933,8 @@ void MainWindow::refreshProcessTree() {
                 childItem->setSortValue(1, static_cast<double>(inst.pid));
                 childItem->setSortValue(2, static_cast<double>(inst.wsBytes));
 
-                QString childTooltip = QString("Process: %1\nPID: %2\nRAM: %3 MB\nService: %4\nPath: %5")
-                                           .arg(inst.procName).arg(inst.pid).arg(inst.wsMB, 0, 'f', 2).arg(serviceDesc.isEmpty() ? "N/A" : serviceDesc).arg(inst.fullPath.isEmpty() ? "N/A" : inst.fullPath);
+                QString childTooltip = QString("Process: %1\nPID: %2\nRAM: %3\nService: %4\nPath: %5")
+                                           .arg(inst.procName).arg(inst.pid).arg(formatRamSizeMB(inst.wsMB)).arg(serviceDesc.isEmpty() ? "N/A" : serviceDesc).arg(inst.fullPath.isEmpty() ? "N/A" : inst.fullPath);
                 childItem->setToolTip(0, childTooltip);
                 childItem->setToolTip(1, childTooltip);
                 childItem->setToolTip(2, childTooltip);
@@ -951,11 +979,23 @@ void MainWindow::onOptionsButtonClicked() {
         }
     }
 
+    bool isProtected = false;
+    for (const QString &ex : m_settings.getExclusionList()) {
+        if (ex.compare(procName, Qt::CaseInsensitive) == 0 ||
+            ex.compare(procName + ".exe", Qt::CaseInsensitive) == 0 ||
+            stripExeExtension(ex).compare(stripExeExtension(procName), Qt::CaseInsensitive) == 0) {
+            isProtected = true;
+            break;
+        }
+    }
+
     QMenu optionsMenu(this);
     QAction *actInspect = optionsMenu.addAction(IconProvider::getIcon(IconProvider::DashboardIcon), isGroup ? trXml("actInspectGroup", "Inspect Group Diagnostics (%1 Processes)").arg(pidsList.size()) : trXml("actInspectSingle", "Inspect Detailed Diagnostics"));
     optionsMenu.addSeparator();
 
-    QAction *actProtect = optionsMenu.addAction(IconProvider::getIcon(IconProvider::ShieldIcon), trXml("actProtect", "Protect (Add to Exclusion List)"));
+    QAction *actProtect = optionsMenu.addAction(IconProvider::getIcon(IconProvider::ShieldIcon),
+        isProtected ? trXml("actRemovePriority", "Remove Priority (Remove from Exclusion List)")
+                    : trXml("actSetPriority", "Set Priority (Add to Exclusion List)"));
     QAction *actKill = optionsMenu.addAction(IconProvider::getIcon(IconProvider::TrashIcon), isGroup ? trXml("actKillGroup", "Task Kill (Terminate All %1 Processes)").arg(pidsList.size()) : trXml("actKillSingle", "Task Kill (Terminate Process)"));
     QAction *actOpenLocation = optionsMenu.addAction(IconProvider::getIcon(IconProvider::ProcessesIcon), trXml("actOpenLocation", "Open File Location"));
 
@@ -968,10 +1008,29 @@ void MainWindow::onOptionsButtonClicked() {
             openProcessInspector(pid, procName);
         }
     } else if (selected == actProtect) {
-        m_settings.addExclusion(procName);
-        loadSettingsToUI();
-        appendLog(trXml("logProtected", "Protected '%1' by adding to Exclusion List.").arg(procName));
-        QMessageBox::information(this, trXml("actProtect", "Protect (Add to Exclusion List)"), trXml("logProtected", "Protected '%1' by adding to Exclusion List.").arg(procName));
+        if (isProtected) {
+            m_settings.removeExclusion(procName);
+            m_settings.removeExclusion(procName + ".exe");
+            m_settings.removeExclusion(stripExeExtension(procName));
+            loadSettingsToUI();
+            appendLog(trXml("logExclusionRemoved", "Removed '%1' from process exclusion list.").arg(stripExeExtension(procName)));
+        } else {
+            QMessageBox msgBox(this);
+            msgBox.setIcon(QMessageBox::Question);
+            msgBox.setWindowTitle(trXml("titleConfirmPriority", "Confirm Set Priority"));
+            msgBox.setText(trXml("msgConfirmPriority", "Are you sure you want to add '%1' to the Priority List?").arg(stripExeExtension(procName)));
+            QPushButton *btnYes = msgBox.addButton(trXml("btnYes", "Yes"), QMessageBox::YesRole);
+            QPushButton *btnNo = msgBox.addButton(trXml("btnNo", "No"), QMessageBox::NoRole);
+            msgBox.setDefaultButton(btnNo);
+            msgBox.exec();
+
+            if (msgBox.clickedButton() == btnYes) {
+                QString saveName = procName.endsWith(".exe", Qt::CaseInsensitive) ? procName : (procName + ".exe");
+                m_settings.addExclusion(saveName);
+                loadSettingsToUI();
+                appendLog(trXml("logSetPriority", "Set priority for '%1' (Added to Exclusion List).").arg(stripExeExtension(procName)));
+            }
+        }
     } else if (selected == actKill) {
         if (isGroup) {
             killProcessGroup(procName, pidsList);
@@ -1034,14 +1093,16 @@ void MainWindow::openFileLocation(const QString &exePath) {
 void MainWindow::killProcessGroup(const QString &procName, const QList<DWORD> &pids) {
     if (pids.isEmpty()) return;
 
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this,
-        trXml("actKillGroup", "Task Kill (Terminate All %1 Processes)").arg(pids.size()),
-        QString("Are you sure you want to terminate ALL %1 instances of process group '%2'?").arg(pids.size()).arg(procName),
-        QMessageBox::Yes | QMessageBox::No
-    );
+    QMessageBox msgBox(this);
+    msgBox.setIcon(QMessageBox::Question);
+    msgBox.setWindowTitle(trXml("actKillGroup", "Task Kill (Terminate All %1 Processes)").arg(pids.size()));
+    msgBox.setText(trXml("msgConfirmKillGroup", "Are you sure you want to terminate ALL %1 instances of process group '%2'?").arg(pids.size()).arg(procName));
+    QPushButton *btnYes = msgBox.addButton(trXml("btnYes", "Yes"), QMessageBox::YesRole);
+    QPushButton *btnNo = msgBox.addButton(trXml("btnNo", "No"), QMessageBox::NoRole);
+    msgBox.setDefaultButton(btnNo);
+    msgBox.exec();
 
-    if (reply == QMessageBox::Yes) {
+    if (msgBox.clickedButton() == btnYes) {
         int killed = 0;
         for (DWORD pid : pids) {
             if (pid == 0 || pid == 4 || pid == GetCurrentProcessId()) continue;
@@ -1058,28 +1119,30 @@ void MainWindow::killProcessGroup(const QString &procName, const QList<DWORD> &p
 
 void MainWindow::killSingleProcess(DWORD pid, const QString &procName) {
     if (pid == 0 || pid == GetCurrentProcessId()) {
-        QMessageBox::warning(this, "Termination Error", "Cannot terminate this critical system process.");
+        QMessageBox::warning(this, trXml("titleTermError", "Termination Error"), trXml("msgCannotTermSys", "Cannot terminate this critical system process."));
         return;
     }
 
-    QMessageBox::StandardButton reply = QMessageBox::question(
-        this,
-        trXml("actKillSingle", "Task Kill (Terminate Process)"),
-        QString("Are you sure you want to terminate process '%1' (PID: %2)?").arg(procName).arg(pid),
-        QMessageBox::Yes | QMessageBox::No
-    );
+    QMessageBox msgBox(this);
+    msgBox.setIcon(QMessageBox::Question);
+    msgBox.setWindowTitle(trXml("actKillSingle", "Task Kill (Terminate Process)"));
+    msgBox.setText(trXml("msgConfirmKillSingle", "Are you sure you want to terminate process '%1' (PID: %2)?").arg(procName).arg(pid));
+    QPushButton *btnYes = msgBox.addButton(trXml("btnYes", "Yes"), QMessageBox::YesRole);
+    QPushButton *btnNo = msgBox.addButton(trXml("btnNo", "No"), QMessageBox::NoRole);
+    msgBox.setDefaultButton(btnNo);
+    msgBox.exec();
 
-    if (reply == QMessageBox::Yes) {
+    if (msgBox.clickedButton() == btnYes) {
         HANDLE hProc = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
         if (hProc) {
             if (TerminateProcess(hProc, 1)) {
                 appendLog(trXml("logTerminatedSingle", "Terminated process '%1' (PID: %2).").arg(procName).arg(pid));
             } else {
-                appendLog(QString("Failed to terminate process '%1' (Access Denied).").arg(procName), false);
+                appendLog(trXml("logFailTermAccess", "Failed to terminate process '%1' (Access Denied).").arg(procName), false);
             }
             CloseHandle(hProc);
         } else {
-            appendLog(QString("Failed to open process '%1' for termination.").arg(procName), false);
+            appendLog(trXml("logFailOpenTerm", "Failed to open process '%1' for termination.").arg(procName), false);
         }
         refreshProcessTree();
     }
@@ -1090,31 +1153,88 @@ void MainWindow::on_btnRefreshProcesses_clicked() {
     appendLog(trXml("logRefreshedProcesses", "Refreshed running processes tree."));
 }
 
+//// Old Method
+// void MainWindow::on_txtSearchProcess_textChanged(const QString &text) {
+//     int topCount = ui->treeProcesses->topLevelItemCount();
+//     bool isEmpty = text.trimmed().isEmpty();
+
+//     for (int i = 0; i < topCount; ++i) {
+//         QTreeWidgetItem *parentItem = ui->treeProcesses->topLevelItem(i);
+//         if (!parentItem) continue;
+
+//         if (isEmpty) {
+//             parentItem->setHidden(false);
+//             parentItem->setExpanded(false);
+//             int childCount = parentItem->childCount();
+//             for (int c = 0; c < childCount; ++c) {
+//                 if (QTreeWidgetItem *childItem = parentItem->child(c)) {
+//                     childItem->setHidden(false);
+//                 }
+//             }
+//             continue;
+//         }
+
+//         bool parentMatch = parentItem->text(0).contains(text, Qt::CaseInsensitive) ||
+//                            parentItem->text(1).contains(text);
+
+//         bool childMatch = false;
+//         int childCount = parentItem->childCount();
+//         for (int c = 0; c < childCount; ++c) {
+//             QTreeWidgetItem *childItem = parentItem->child(c);
+//             bool m = childItem->text(0).contains(text, Qt::CaseInsensitive) ||
+//                      childItem->text(1).contains(text);
+//             childItem->setHidden(!m);
+//             if (m) childMatch = true;
+//         }
+
+//         parentItem->setHidden(!parentMatch && !childMatch);
+//         if (parentMatch || childMatch) {
+//             parentItem->setExpanded(false);
+//         }
+//     }
+// }
+
 void MainWindow::on_txtSearchProcess_textChanged(const QString &text) {
     int topCount = ui->treeProcesses->topLevelItemCount();
+    QString trimmedText = text.trimmed();
+    bool isEmpty = trimmedText.isEmpty();
+
     for (int i = 0; i < topCount; ++i) {
         QTreeWidgetItem *parentItem = ui->treeProcesses->topLevelItem(i);
         if (!parentItem) continue;
 
-        bool parentMatch = text.isEmpty() ||
-                           parentItem->text(0).contains(text, Qt::CaseInsensitive) ||
-                           parentItem->text(1).contains(text);
+        if (isEmpty) {
+            parentItem->setHidden(false);
+            parentItem->setExpanded(false);
+
+            int childCount = parentItem->childCount();
+            for (int c = 0; c < childCount; ++c) {
+                if (QTreeWidgetItem *childItem = parentItem->child(c)) {
+                    childItem->setHidden(false);
+                }
+            }
+            continue;
+        }
+
+        bool parentMatch = parentItem->text(0).contains(trimmedText, Qt::CaseInsensitive) ||
+                           parentItem->text(1).contains(trimmedText);
 
         bool childMatch = false;
         int childCount = parentItem->childCount();
         for (int c = 0; c < childCount; ++c) {
             QTreeWidgetItem *childItem = parentItem->child(c);
-            bool m = text.isEmpty() ||
-                     childItem->text(0).contains(text, Qt::CaseInsensitive) ||
-                     childItem->text(1).contains(text);
+            if (!childItem) continue;
+
+            bool m = childItem->text(0).contains(trimmedText, Qt::CaseInsensitive) ||
+                     childItem->text(1).contains(trimmedText);
+
             childItem->setHidden(!m);
             if (m) childMatch = true;
         }
 
-        parentItem->setHidden(!parentMatch && !childMatch);
-        if (childMatch && !text.isEmpty()) {
-            parentItem->setExpanded(true);
-        }
+        bool isVisible = parentMatch || childMatch;
+        parentItem->setHidden(!isVisible);
+        parentItem->setExpanded(childMatch);
     }
 }
 
@@ -1162,11 +1282,23 @@ void MainWindow::on_treeProcesses_customContextMenuRequested(const QPoint &pos) 
         }
     }
 
+    bool isProtected = false;
+    for (const QString &ex : m_settings.getExclusionList()) {
+        if (ex.compare(procName, Qt::CaseInsensitive) == 0 ||
+            ex.compare(procName + ".exe", Qt::CaseInsensitive) == 0 ||
+            stripExeExtension(ex).compare(stripExeExtension(procName), Qt::CaseInsensitive) == 0) {
+            isProtected = true;
+            break;
+        }
+    }
+
     QMenu contextMenu(this);
     QAction *actInspect = contextMenu.addAction(IconProvider::getIcon(IconProvider::DashboardIcon), isGroupNode ? trXml("actInspectGroup", "Inspect Group Diagnostics (%1 Processes)").arg(groupPids.size()) : trXml("actInspectSingle", "Inspect Detailed Diagnostics"));
     contextMenu.addSeparator();
 
-    QAction *actProtect = contextMenu.addAction(IconProvider::getIcon(IconProvider::ShieldIcon), trXml("actProtect", "Protect (Add to Exclusion List)"));
+    QAction *actProtect = contextMenu.addAction(IconProvider::getIcon(IconProvider::ShieldIcon),
+        isProtected ? trXml("actRemovePriority", "Remove Priority (Remove from Exclusion List)")
+                    : trXml("actSetPriority", "Set Priority (Add to Exclusion List)"));
     QAction *actKill = contextMenu.addAction(IconProvider::getIcon(IconProvider::TrashIcon), isGroupNode ? trXml("actKillGroup", "Task Kill (Terminate All %1 Processes)").arg(groupPids.size()) : trXml("actKillSingle", "Task Kill (Terminate Process)"));
     QAction *actOpenLocation = contextMenu.addAction(IconProvider::getIcon(IconProvider::ProcessesIcon), trXml("actOpenLocation", "Open File Location"));
 
@@ -1179,10 +1311,29 @@ void MainWindow::on_treeProcesses_customContextMenuRequested(const QPoint &pos) 
             openProcessInspector(pid, procName);
         }
     } else if (selected == actProtect) {
-        m_settings.addExclusion(procName);
-        loadSettingsToUI();
-        appendLog(trXml("logProtected", "Protected '%1' by adding to Exclusion List.").arg(procName));
-        QMessageBox::information(this, trXml("actProtect", "Protect (Add to Exclusion List)"), trXml("logProtected", "Protected '%1' by adding to Exclusion List.").arg(procName));
+        if (isProtected) {
+            m_settings.removeExclusion(procName);
+            m_settings.removeExclusion(procName + ".exe");
+            m_settings.removeExclusion(stripExeExtension(procName));
+            loadSettingsToUI();
+            appendLog(trXml("logExclusionRemoved", "Removed '%1' from process exclusion list.").arg(stripExeExtension(procName)));
+        } else {
+            QMessageBox msgBox(this);
+            msgBox.setIcon(QMessageBox::Question);
+            msgBox.setWindowTitle(trXml("titleConfirmPriority", "Confirm Set Priority"));
+            msgBox.setText(trXml("msgConfirmPriority", "Are you sure you want to add '%1' to the Priority List?").arg(stripExeExtension(procName)));
+            QPushButton *btnYes = msgBox.addButton(trXml("btnYes", "Yes"), QMessageBox::YesRole);
+            QPushButton *btnNo = msgBox.addButton(trXml("btnNo", "No"), QMessageBox::NoRole);
+            msgBox.setDefaultButton(btnNo);
+            msgBox.exec();
+
+            if (msgBox.clickedButton() == btnYes) {
+                QString saveName = procName.endsWith(".exe", Qt::CaseInsensitive) ? procName : (procName + ".exe");
+                m_settings.addExclusion(saveName);
+                loadSettingsToUI();
+                appendLog(trXml("logSetPriority", "Set priority for '%1' (Added to Exclusion List).").arg(stripExeExtension(procName)));
+            }
+        }
     } else if (selected == actKill) {
         if (isGroupNode) {
             killProcessGroup(procName, groupPids);
@@ -1287,13 +1438,15 @@ bool MainWindow::startWorker(OptimizationWorker::ActionType type, DWORD pid, con
     else if (type == OptimizationWorker::ActionFlushModified) actionTitle = trXml("actTitleFlush", "Flush Modified Memory Page Lists to Disk");
     else if (type == OptimizationWorker::ActionTrimProcess) actionTitle = trXml("actTitleTrimProc", "Trim Working Set for process '%1' (PID: %2)").arg(procName).arg(pid);
 
-    appendLog(trXml("logStartingOp", "Starting Operation : %1 | Please Wait For OS Kernel Memory.").arg(actionTitle));
+    appendLog(trXml("logStartingOp", "Starting Operation: %1").arg(actionTitle));
 
     OptimizationWorker *worker = new OptimizationWorker(type, m_settings.getExclusionList(), this);
     if (type == OptimizationWorker::ActionTrimProcess) {
         worker->setTargetProcess(pid, procName);
         connect(worker, &OptimizationWorker::singleProcessTrimCompleted, this, &MainWindow::onWorkerSingleProcessTrimCompleted);
     } else {
+        connect(worker, &OptimizationWorker::settlingStarted, this, &MainWindow::onWorkerSettlingStarted);
+        connect(worker, &OptimizationWorker::settlingTick, this, &MainWindow::onWorkerSettlingTick);
         connect(worker, &OptimizationWorker::optimizationCompleted, this, &MainWindow::onWorkerOptimizationCompleted);
     }
 
@@ -1301,6 +1454,22 @@ bool MainWindow::startWorker(OptimizationWorker::ActionType type, DWORD pid, con
 
     worker->start();
     return true;
+}
+
+void MainWindow::onWorkerSettlingStarted(const QString &actionTitle) {
+    Q_UNUSED(actionTitle);
+    appendLog(trXml("logWaitingSettling", "Waiting for memory list response and settling..."), true);
+}
+
+void MainWindow::onWorkerSettlingTick(int currentSec, int totalSec) {
+    Q_UNUSED(currentSec);
+    Q_UNUSED(totalSec);
+
+    QTextCursor cursor = ui->txtLog->textCursor();
+    cursor.movePosition(QTextCursor::End);
+    cursor.insertText(" .");
+    ui->txtLog->setTextCursor(cursor);
+    ui->txtLog->ensureCursorVisible();
 }
 
 void MainWindow::onWorkerOptimizationCompleted(const QString &actionTitle, const OptimizationResult &res) {
@@ -1440,11 +1609,20 @@ void MainWindow::on_btnRemoveExclusion_clicked() {
     QListWidgetItem *item = ui->listExclusions->currentItem();
     if (!item) return;
 
-    QString procName = item->text();
+    QString procName = item->data(Qt::UserRole).toString();
+    if (procName.isEmpty()) procName = item->text();
+
     m_settings.removeExclusion(procName);
+    m_settings.removeExclusion(procName + ".exe");
+    m_settings.removeExclusion(stripExeExtension(procName));
 
     loadSettingsToUI();
-    appendLog(trXml("logExclusionRemoved", "Removed '%1' from process exclusion list.").arg(procName));
+    appendLog(trXml("logExclusionRemoved", "Removed '%1' from process exclusion list.").arg(stripExeExtension(procName)));
+}
+
+void MainWindow::on_chkDeveloperMode_toggled(bool checked) {
+    m_settings.setDeveloperMode(checked);
+    appendLog(trXml("logSetDevMode", "Settings Updated: Developer Mode %1.").arg(checked ? trXml("txtEnabled", "Enabled") : trXml("txtDisabled", "Disabled")));
 }
 
 void MainWindow::on_chkAutoThreshold_toggled(bool checked) {
@@ -1599,46 +1777,85 @@ void MainWindow::appendLog(const QString &message, bool isSuccess) {
 void MainWindow::logOptimizationReport(const QString &actionTitle, const OptimizationResult &res) {
     bool isDark = m_settings.isDarkTheme();
 
-    QString headerColor = isDark ? "#38bdf8" : "#0284c7";  // Bright cyan / deep navy
-    QString infoColor   = isDark ? "#f8fafc" : "#0f172a";  // High contrast body
-    QString subColor    = isDark ? "#94a3b8" : "#64748b";  // Muted gray labels
-    QString greenColor  = isDark ? "#34d399" : "#047857";  // Emerald accent
-    QString yellowColor = isDark ? "#fbbf24" : "#b45309";  // Amber accent
+    if (!m_settings.isDeveloperMode()) {
+        // Standard User-Friendly Card (Developer Mode OFF)
+        QString bg = isDark ? "rgba(16, 185, 129, 0.12)" : "#f0fdf4";
+        QString border = isDark ? "#10b981" : "#16a34a";
+        QString textCol = isDark ? "#f8fafc" : "#0f172a";
+        QString accentCol = isDark ? "#34d399" : "#15803d";
+
+        QString reclaimedText = formatRamSizeMB(res.reclaimedMB);
+
+        QString html = QString(
+            "<div style='margin: 8px 0; padding: 12px 14px; background: %1; border-left: 4px solid %2; border-radius: 8px; font-family: Segoe UI, sans-serif; font-size: 9.5pt; color: %3;'>"
+            "<b style='color: %4; font-size: 10.5pt;'>✨ %5</b>"
+            "<div style='margin-top: 6px; line-height: 1.6;'>"
+            "• %6: <span dir='ltr' style='unicode-bidi: embed; font-weight: bold; color: %4;'>%7</span><br>"
+            "• %8: <span dir='ltr' style='unicode-bidi: embed; font-weight: bold;'>%9% &rarr; <span style='color:%4;'>%10%</span> (-%11%)</span><br>"
+            "• %12: <span dir='ltr' style='unicode-bidi: embed; font-weight: bold;'>%13 %14</span>"
+            "</div>"
+            "</div>"
+        )
+        .arg(bg)
+        .arg(border)
+        .arg(textCol)
+        .arg(accentCol)
+        .arg(trXml("logSimpleTitle", "Memory Optimization Completed!"))
+        .arg(trXml("logSimpleReclaimed", "RAM Reclaimed"))
+        .arg(reclaimedText)
+        .arg(trXml("logSimpleRamLoad", "Memory Load"))
+        .arg(res.before.memoryLoadPercent)
+        .arg(res.after.memoryLoadPercent)
+        .arg(res.loadDiffPercent)
+        .arg(trXml("reportProcTrim", "Process Working Sets Trimming:"))
+        .arg(res.trimmedProcesses)
+        .arg(trXml("reportProcTrimmedCount", "Processes Trimmed"));
+
+        ui->txtLog->append(html);
+        return;
+    }
+
+    // Developer Mode ON: Advanced Technical Win32 Kernel Report
+    QString headerColor = isDark ? "#38bdf8" : "#0284c7";
+    QString infoColor   = isDark ? "#f8fafc" : "#0f172a";
+    QString subColor    = isDark ? "#94a3b8" : "#64748b";
+    QString greenColor  = isDark ? "#34d399" : "#047857";
+    QString yellowColor = isDark ? "#fbbf24" : "#b45309";
     QString timeStr     = QDateTime::currentDateTime().toString("hh:mm:ss");
 
     QString html;
-    html += QString("<div style='margin-top:6px; margin-bottom:6px; font-family:Segoe UI, Consolas, monospace; font-size:9.5pt;'>");
+    html += QString("<div style='margin:6px 0; font-family:Segoe UI, Consolas, monospace; font-size:9.5pt;'>");
     html += QString("<b style='color:%1;'>======================================================================</b><br>").arg(headerColor);
     html += QString("<b style='color:%1;'>[%2] %3</b><br>").arg(headerColor).arg(timeStr).arg(trXml("reportActionInit", "ACTION INITIATED: %1").arg(actionTitle));
     html += QString("<b style='color:%1;'>----------------------------------------------------------------------</b><br>").arg(subColor);
 
     // Initial RAM State
     html += QString("<b style='color:%1;'>%2</b><br>").arg(yellowColor).arg(trXml("reportInitState", "INITIAL SYSTEM MEMORY STATE (BEFORE):"));
-    html += QString("<span style='color:%1;'>   • %2 </span><b style='color:%3;'>%4%</b><br>")
+    html += QString("<span style='color:%1;'>   • %2 </span><span dir='ltr' style='unicode-bidi: embed;'><b style='color:%3;'>%4%</b></span><br>")
                 .arg(infoColor).arg(trXml("reportPhysRamLoad", "Physical RAM Load:")).arg(res.before.memoryLoadPercent >= 80 ? "#ef4444" : greenColor).arg(res.before.memoryLoadPercent);
-    html += QString("<span style='color:%1;'>   • %2 </span><b style='color:%3;'>%4 GB</b> <span style='color:%5;'>(%6 %7 GB | %8 %9 GB)</span><br>")
-                .arg(infoColor).arg(trXml("reportUsedMem", "Used Memory:")).arg(infoColor).arg(res.before.usedPhysGB, 0, 'f', 2).arg(subColor).arg(trXml("reportTotalInstalled", "Total Installed:")).arg(res.before.totalPhysGB, 0, 'f', 2).arg(trXml("reportAvailable", "Available:")).arg(res.before.availPhysGB, 0, 'f', 2);
-    html += QString("<span style='color:%1;'>   • %2 </span><b style='color:%3;'>%4 GB</b><br>")
-                .arg(infoColor).arg(trXml("reportStandbyCache", "Standby Cache Memory:")).arg(infoColor).arg(res.before.standbyCacheGB, 0, 'f', 2);
+    html += QString("<span style='color:%1;'>   • %2 </span><span dir='ltr' style='unicode-bidi: embed;'><b style='color:%3;'>%4</b> (%6 %7 | %8 %9)</span><br>")
+                .arg(infoColor).arg(trXml("reportUsedMem", "Used Memory:")).arg(infoColor).arg(formatRamSizeGB(res.before.usedPhysGB)).arg(trXml("reportTotalInstalled", "Total Installed:")).arg(formatRamSizeGB(res.before.totalPhysGB)).arg(trXml("reportAvailable", "Available:")).arg(formatRamSizeGB(res.before.availPhysGB));
+    html += QString("<span style='color:%1;'>   • %2 </span><span dir='ltr' style='unicode-bidi: embed;'><b style='color:%3;'>%4</b></span><br>")
+                .arg(infoColor).arg(trXml("reportStandbyCache", "Standby Cache Memory:")).arg(infoColor).arg(formatRamSizeGB(res.before.standbyCacheGB));
 
     // Execution Details
     html += QString("<b style='color:%1;'>%2</b><br>").arg(yellowColor).arg(trXml("reportKernelSummary", "WIN32 KERNEL EXECUTION SUMMARY:"));
-    html += QString("<span style='color:%1;'>   [1] %2 </span><b style='color:%3;'>%4 %5</b> <span style='color:%6;'>(%7 %8 | %9 %10)</span><br>")
-                .arg(infoColor).arg(trXml("reportProcTrim", "Process Working Sets Trimming:")).arg(greenColor).arg(res.trimmedProcesses).arg(trXml("reportProcTrimmedCount", "Processes Trimmed")).arg(subColor).arg(trXml("reportProtectedCount", "Protected:")).arg(res.protectedProcesses).arg(trXml("reportSkippedCount", "System Skipped:")).arg(res.skippedProcesses);
+    html += QString("<span style='color:%1;'>   [1] %2 </span><span dir='ltr' style='unicode-bidi: embed;'><b style='color:%3;'>%4 %5</b> (%7 %8 | %9 %10)</span><br>")
+                .arg(infoColor).arg(trXml("reportProcTrim", "Process Working Sets Trimming:")).arg(greenColor).arg(res.trimmedProcesses).arg(trXml("reportProcTrimmedCount", "Processes Trimmed")).arg(trXml("reportProtectedCount", "Protected:")).arg(res.protectedProcesses).arg(trXml("reportSkippedCount", "System Skipped:")).arg(res.skippedProcesses);
 
     // Final RAM State
-    html += QString("<b style='color:%1;'>%2</b><br>").arg(yellowColor).arg(trXml("reportAfterState", "SETTLED SYSTEM MEMORY STATE (AFTER):"));
-    html += QString("<span style='color:%1;'>   • %2 </span><b style='color:%3;'>%4%</b> <span style='color:%5;'>(%6 -%7%)</span><br>")
-                .arg(infoColor).arg(trXml("reportPhysRamLoad", "Physical RAM Load:")).arg(greenColor).arg(res.after.memoryLoadPercent).arg(subColor).arg(trXml("reportLoadReduction", "Load Reduction:")).arg(res.loadDiffPercent);
-    html += QString("<span style='color:%1;'>   • %2 </span><b style='color:%3;'>%4 GB</b> <span style='color:%5;'>(%6 %7 GB)</span><br>")
-                .arg(infoColor).arg(trXml("reportUsedMem", "Used Memory:")).arg(infoColor).arg(res.after.usedPhysGB, 0, 'f', 2).arg(subColor).arg(trXml("reportAvailable", "Available:")).arg(res.after.availPhysGB, 0, 'f', 2);
-    html += QString("<span style='color:%1;'>   • %2 </span><b style='color:%3;'>%4 GB</b><br>")
-                .arg(infoColor).arg(trXml("reportStandbyCache", "Standby Cache Memory:")).arg(infoColor).arg(res.after.standbyCacheGB, 0, 'f', 2);
+    html += QString("<b style='color:%1;'>%2</b><br>").arg(yellowColor).arg(trXml("reportAfterState", "SETTLED SYSTEM MEMORY STATE (AFTER 10s OBSERVATION):"));
+    html += QString("<span style='color:%1;'>   • %2 </span><span dir='ltr' style='unicode-bidi: embed;'><b style='color:%3;'>%4%</b> (-%5%)</span><br>")
+                .arg(infoColor).arg(trXml("reportPhysRamLoad", "Physical RAM Load:")).arg(greenColor).arg(res.after.memoryLoadPercent).arg(res.loadDiffPercent);
+    html += QString("<span style='color:%1;'>   • %2 </span><span dir='ltr' style='unicode-bidi: embed;'><b style='color:%3;'>%4</b> (%5 %6)</span><br>")
+                .arg(infoColor).arg(trXml("reportUsedMem", "Used Memory:")).arg(infoColor).arg(formatRamSizeGB(res.after.usedPhysGB)).arg(trXml("reportAvailable", "Available:")).arg(formatRamSizeGB(res.after.availPhysGB));
+    html += QString("<span style='color:%1;'>   • %2 </span><span dir='ltr' style='unicode-bidi: embed;'><b style='color:%3;'>%4</b></span><br>")
+                .arg(infoColor).arg(trXml("reportStandbyCache", "Standby Cache Memory:")).arg(infoColor).arg(formatRamSizeGB(res.after.standbyCacheGB));
 
     // Net Reclaimed Summary
-    html += QString("<b style='color:%1;'>★ %2 </b><b style='color:%3;'>%4 GB (%5 MB)</b><br>")
-                .arg(greenColor).arg(trXml("reportTotalReclaimed", "TOTAL RECLAIMED PHYSICAL MEMORY:")).arg(greenColor).arg(res.reclaimedGB, 0, 'f', 2).arg(res.reclaimedMB, 0, 'f', 2);
-    html += QString("<b style='color:%1;'>======================================================================</b></div><br>").arg(headerColor);
+    html += QString("<b style='color:%1;'>★ %2 </b><span dir='ltr' style='unicode-bidi: embed;'><b style='color:%3;'>%4</b></span><br>")
+                .arg(greenColor).arg(trXml("reportTotalReclaimed", "TOTAL RECLAIMED PHYSICAL MEMORY:")).arg(greenColor).arg(formatRamSizeMB(res.reclaimedMB));
+    html += QString("<b style='color:%1;'>======================================================================</b></div>").arg(headerColor);
 
     ui->txtLog->append(html);
 }
