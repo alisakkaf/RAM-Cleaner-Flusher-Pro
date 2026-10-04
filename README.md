@@ -504,7 +504,11 @@ mingw32-make -j8
 Thank you to all the amazing contributors who help improve RAM Cleaner & Flusher Pro Suite!
 
 <a href="https://github.com/alisakkaf/RAM-Cleaner-Flusher-Pro/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=alisakkaf/RAM-Cleaner-Flusher-Pro&v=1" alt="Contributors" />
+  <img src="https://contributors-img.web.app/image?repo=alisakkaf/RAM-Cleaner-Flusher-Pro" alt="Contributors" />
+</a>
+
+<a href="https://github.com/alisakkaf/RAM-Cleaner-Flusher-Pro/graphs/contributors">
+  <img src="https://svg.tian-tian.site/api/contributors?repo=alisakkaf/RAM-Cleaner-Flusher-Pro" alt="Contributors" />
 </a>
 
 *Want to be featured here? [Contribute to RAM Cleaner Pro](CONTRIBUTING.md) by submitting bug fixes or new features!*
